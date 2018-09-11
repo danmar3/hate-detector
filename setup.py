@@ -7,7 +7,7 @@ setup(name='nlp516',
       version='0.1',
       packages=find_packages(
           exclude=["*test*", "tests"]),
-      install_requires=['pandas==0.23.4', 'pathlib', 'tqdm'],
+      install_requires=['nltk', 'pandas==0.23.4', 'pathlib', 'tqdm'],
       python_requires='>=3',
       extras_require={
           'develop': ['nose', 'nose-timer', 'jupyter'],
