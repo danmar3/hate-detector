@@ -1,11 +1,8 @@
 # Dataset
 *.zip
-<<<<<<< HEAD
 *.tsv
-=======
 nlp516/dataset/*
 *results*.txt
->>>>>>> f4284c7e72f458e236b74821ddb83ff0631b536a
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
