@@ -27,6 +27,28 @@ class PublicTrialRaw(object):
             self.es = pd.read_csv(file, sep='\t')
 
 
+class PublicEnglishDataset(object):
+    src = os.path.join(os.path.dirname(nlp516.__file__),
+                       'dataset/development')
+
+    def __init__(self, src=None):
+        with open(os.path.join(self.src, 'train_en.tsv')) as file:
+            self.train = pd.read_csv(file, sep='\t')
+        with open(os.path.join(self.src, 'dev_en.tsv')) as file:
+            self.valid = pd.read_csv(file, sep='\t')
+
+
+class PublicSpanishDataset(object):
+    src = os.path.join(os.path.dirname(nlp516.__file__),
+                       'dataset/development')
+
+    def __init__(self, src=None):
+        with open(os.path.join(self.src, 'train_es.tsv')) as file:
+            self.train = pd.read_csv(file, sep='\t')
+        with open(os.path.join(self.src, 'dev_es.tsv')) as file:
+            self.valid = pd.read_csv(file, sep='\t')
+
+
 def map_column(df, column, func):
     ''' applies the function func to a specific column '''
     def mapper(series):
