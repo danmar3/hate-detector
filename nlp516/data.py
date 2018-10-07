@@ -6,6 +6,7 @@ import os
 import re
 import nltk
 import nlp516
+import string
 import zipfile
 import pandas as pd
 from nltk.corpus import stopwords
@@ -137,12 +138,27 @@ def remove_words_with_numbers(tokens):
                        tokens))
 
 
+def remove_punctuation(tokens):
+    ''' remove punctuation from a list of tokens '''
+    table = str.maketrans('', '', string.punctuation + '¿“”¡')
+    stripped = [w.translate(table) for w in tokens]
+    return [w for w in stripped if w]
+
+
+def find_emojis(tokens):
+    ''' find the emojis on a list of tokens '''
+    return re.findall(r'[^\w\s,]', ' '.join(tokens))
+
+
 class Stemmer(object):
     def __init__(self, language):
-        assert language in set(['english']),\
-            'supported languages are: english'
+        assert language in set(['english', 'spanish']),\
+            'supported languages are: english, spanish'
         self.language = language
-        self.stemmer = nltk.stem.PorterStemmer()
+        if self.language == 'english':
+            self.stemmer = nltk.stem.PorterStemmer()
+        elif self.language == 'spanish':
+            self.stemmer = nltk.stem.SnowballStemmer("spanish")
 
     def __call__(self, tokens):
         return [self.stemmer.stem(token) for token in tokens]

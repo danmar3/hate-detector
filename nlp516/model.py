@@ -6,7 +6,9 @@ import operator
 import numpy as np
 import pandas as pd
 import sklearn.linear_model
+import sklearn.svm
 from sklearn.feature_extraction.text import CountVectorizer
+import nlp516.vectorizer
 
 
 class Vectorizer(object):
@@ -37,9 +39,9 @@ class Vectorizer(object):
 
 
 class MlModel(object):
-    def __init__(self, n_features):
-        self.vectorizer = Vectorizer(n_features)
-        self.classifier = sklearn.linear_model.LogisticRegression()
+    def __init__(self, vectorizer, classifier):
+        self.vectorizer = vectorizer
+        self.classifier = classifier
 
     def fit(self, x, y):
         self.vectorizer.fit(x)
@@ -52,6 +54,38 @@ class MlModel(object):
         return self.classifier.predict(x_vect)
 
     def score(self, x, y):
-        x_vect = self.vectorizer.transform(x)
-        test_y = self.classifier.predict(x_vect)
+        test_y = self.predict(x)
         return np.mean(test_y == y)
+
+    def precision_score(self, x, y):
+        return sklearn.metrics.precision_score(
+            y_true=y, y_pred=self.predict(x))
+
+    def recall_score(self, x, y):
+        return sklearn.metrics.recall_score(
+            y_true=y, y_pred=self.predict(x))
+
+    def f1_score(self, x, y):
+        return sklearn.metrics.f1_score(
+            y_true=y, y_pred=self.predict(x))
+
+
+class MajorityBaseline(MlModel):
+    def __init__(self):
+        pass
+
+    def fit(self, x, y):
+        self.majority = (1.0 if np.mean(y) > 0.5
+                         else 0.0)
+        print('score: {}'.format(self.score(x, y)))
+
+    def predict(self, x):
+        out = np.zeros(shape=[x.shape[0]])
+        out.fill(self.majority)
+        return out
+
+
+class SVMModel(MlModel):
+    def __init__(self, n_features):
+        self.vectorizer = nlp516.vectorizer.UnigramPresence(n_features)
+        self.classifier = sklearn.svm.SVC(gamma='scale')
