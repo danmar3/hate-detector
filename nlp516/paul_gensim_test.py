@@ -4,6 +4,7 @@ import os
 import zipfile
 import nlp516
 import pandas
+import numpy
 print("hello")
 dataset = data.PublicTrialRaw()
 
@@ -63,20 +64,22 @@ for doc in documents:
     vector = model.infer_vector(doc)
     vectors.append(vector)
 
-from sklearn.linear_model import LogisticRegression
+#from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import GradientBoostingClassifier
 #classifier = LogisticRegression()
 classifier = GradientBoostingClassifier()
 classifier.fit(vectors[:-1000], labels[:-1000])
 
-print(classifier.score(vectors[-1000:], labels[-1000:]))
+score = classifier.score(vectors[-1000:], labels[-1000:])
+print(score)
 
-# from sklearn.model_selection import cross_val_score
-# #clf = svm.SVC(kernel='linear', C=1)
-# scores = cross_val_score(classifier, vectors, labels, cv=5)
-# print(scores)
-for i in range(8000, 9000):
-    print(labels[i], classifier.predict([vectors[i]]), lines[i])
+from sklearn.model_selection import cross_val_score
+scores = cross_val_score(classifier, vectors, labels, cv=5)
+
+print("Cross validaton accuracy:", numpy.mean(scores), scores)
+
+#for i in range(8000, 9000):
+#    print(labels[i], classifier.predict([vectors[i]]), lines[i])
 
 # >>> from gensim.test.utils import get_tmpfile
 # >>>
