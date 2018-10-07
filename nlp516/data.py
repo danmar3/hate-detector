@@ -98,6 +98,16 @@ def user_camelcase_map(tokens):
     return tokens
 
 
+def remove_user_map(tokens):
+    ''' finds user tags and remove them '''
+    def is_user(text):
+        return (True if text[0] == '@'
+                else False)
+
+    tokens = [t for t in tokens if not is_user(t)]
+    return tokens
+
+
 def hashtag_camelcase_map(tokens):
     ''' finds hash tags and splits them following a CamelCase format '''
     def is_hashtag(text):
