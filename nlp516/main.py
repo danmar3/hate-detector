@@ -90,7 +90,8 @@ def eval_models(classifiers, vectorizers, task, dataset):
 
 
 classifiers = {'linear': lambda: sklearn.linear_model.LogisticRegression(),
-               'svm': lambda: sklearn.svm.SVC(gamma='scale'),
+               'svm-linear': lambda: sklearn.svm.LinearSVC(),
+               'svm-rbf': lambda: sklearn.svm.SVC(gamma='scale'),
                'tree': lambda: sklearn.tree.DecisionTreeClassifier(),
                'forest': lambda: sklearn.ensemble.RandomForestClassifier(),
                'bayes': lambda: sklearn.naive_bayes.GaussianNB()}
