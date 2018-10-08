@@ -1,5 +1,6 @@
 # Dataset
 *.zip
+*.tsv
 nlp516/dataset/*
 *results*.txt
 
