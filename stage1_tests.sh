@@ -1,3 +1,3 @@
-source env/bin/activate
-python main.py
+source release_env/bin/activate
+run_stage1
 deactivate
