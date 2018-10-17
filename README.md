@@ -22,6 +22,7 @@ chmod +x stage1_tests.sh
 ./stage1_tests.sh
 ```
 
+Results are printed into a file called `results.txt`
 
 ## Developers
 * Paul Hudgins (hudginspj@.vcu.edu)

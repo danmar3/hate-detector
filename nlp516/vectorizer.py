@@ -5,7 +5,8 @@ Feature selection and vectorization of corpus
 import operator
 import numpy as np
 import nlp516.data
-
+import gensim
+import gensim.models.doc2vec
 
 class Unigram(object):
     def __init__(self, n_features):
@@ -77,3 +78,25 @@ class Unigram2(Unigram):
         count = {idx: c for idx, c in enumerate(x_vec.sum(0))}
         count = sorted(count.items(), key=operator.itemgetter(1))
         self.features_idx = [c[0] for c in count[:self.n_features]]
+
+
+class Doc2Vec(object):
+    def _preprocessing(self, data):
+        corpus = list(map(lambda tags: ' '.join(tags), data))
+        corpus = list(map(gensim.utils.simple_preprocess, corpus))
+        return corpus
+
+    def fit(self, data):
+        data = self._preprocessing(data)
+        TaggedDocument = gensim.models.doc2vec.TaggedDocument
+        documents = [TaggedDocument(doc, [i])
+                     for i, doc in enumerate(data)]
+        self.model = gensim.models.doc2vec.Doc2Vec(
+            documents, vector_size=300, window=2, min_count=1, workers=4)
+
+    def transform(self, data):
+        data = self._preprocessing(data)
+        vectors = [self.model.infer_vector(doc) for doc in data]
+        x = np.stack(vectors, axis=0)
+        return x
+

@@ -11,49 +11,39 @@ from sklearn.feature_extraction.text import CountVectorizer
 import nlp516.vectorizer
 
 
-class Vectorizer(object):
-    @staticmethod
-    def get_corpus(dataset):
-        return [' '.join(sample) for sample in dataset]
-
-    def __init__(self, n_features):
-        self.n_features = n_features
-        self.vectorizer = CountVectorizer()
-
-    def id2word(self, id):
-        vocabulary_inv = {value: key for key, value
-                          in self.vectorizer.vocabulary_.items()}
-        return vocabulary_inv[id]
-
-    def fit(self, data):
-        data = self.get_corpus(data)
-        x = self.vectorizer.fit_transform(data)
-        count = {idx: c for idx, c in enumerate(x.toarray().sum(0))}
-        count = sorted(count.items(), key=operator.itemgetter(1))
-        self.features_idx = [c[0] for c in count[-self.n_features:]]
-
-    def transform(self, data):
-        data = self.get_corpus(data)
-        x = self.vectorizer.transform(data)
-        return x[:, self.features_idx]
-
-
 class MlModel(object):
+    ''' Model comprised of vectorizer and classifier '''
     def __init__(self, vectorizer, classifier):
+        ''' Model for text classification comprised of a vectorizer 
+            and a classifier.
+        Args:
+            vectorizer: model that converts tokenized text into 
+                        vector representations
+            classifier: model that classifies vectorized text into 
+                         a set of categories
+        '''
         self.vectorizer = vectorizer
         self.classifier = classifier
 
     def fit(self, x, y):
+        ''' Fit the vectorizer and classifier models using 
+        training dataset.
+        Args:
+            x (nparray): training inputs comprised of list of tags.
+            y (nparray): training labels.
+        '''
         self.vectorizer.fit(x)
         x_vect = self.vectorizer.transform(x)
         self.classifier.fit(x_vect, y)
         print('score: {}'.format(self.score(x, y)))
 
     def predict(self, x):
+        ''' Predict the labels for a set of features '''
         x_vect = self.vectorizer.transform(x)
         return self.classifier.predict(x_vect)
 
     def score(self, x, y):
+        ''' accuracy of the model on predicting the labels for x'''
         test_y = self.predict(x)
         return np.mean(test_y == y)
 
@@ -71,6 +61,7 @@ class MlModel(object):
 
 
 class MajorityBaseline(MlModel):
+    ''' Model with Majority Baseline classifier '''
     def __init__(self):
         pass
 
@@ -86,6 +77,7 @@ class MajorityBaseline(MlModel):
 
 
 class SVMModel(MlModel):
+    ''' Model with unigram (precense) vectorizer and SVC classifier '''
     def __init__(self, n_features):
         self.vectorizer = nlp516.vectorizer.UnigramPresence(n_features)
         self.classifier = sklearn.svm.SVC(gamma='scale')
