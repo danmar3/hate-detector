@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
 """
-Spyder Editor
-
-This is a temporary script file.
+An early experiment with wordcounts.
+@author: Paul Hudgins (hudginspj@vcu.edu)
 """
 from collections import Counter
 

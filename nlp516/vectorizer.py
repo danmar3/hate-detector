@@ -1,6 +1,7 @@
 """
 Feature selection and vectorization of corpus
-@author: Daniel L. Marino (marinodl@vcu.edu)
+@author: Daniel L. Marino (marinodl@vcu.edu) (Primary author)
+@author: Paul Hudgins (hudginpj@vcu.edu) (Secondary author)
 """
 import operator
 import numpy as np

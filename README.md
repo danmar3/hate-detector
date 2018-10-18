@@ -1,5 +1,12 @@
 # hate-detector
+The hate-detector project contains work in progress towards Semeval 2019 task #5.
 
+Our first stage of this project includes:
+- Data preprocessing including stemming and removal of stop words
+- Experiments comparing vectorizations
+- Experiments comparing classifiers
+
+See hate-detector/documentation/Project_Orgaization.md for more information.
 
 ## Installation (Debian, Ubuntu)
 1. Install pre-requisites: Python3, pip, virtualenv:

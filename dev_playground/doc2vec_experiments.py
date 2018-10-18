@@ -1,5 +1,9 @@
+"""Experiments with doc2vec
+@author: Paul Hudgins (hudginspj@vcu.edu)
+"""
+
 import gensim
-import data
+import nlp516.data as data
 import os
 import zipfile
 import nlp516
@@ -16,7 +20,7 @@ import gensim.downloader as api
 #src = os.path.join(os.path.dirname(nlp516.__file__),
 #                       'dataset\\public_development_en.zip')
 #archive = zipfile.ZipFile(src, 'r')
-with open('dataset/public_development_en/train_en.tsv', 'rb') as file:
+with open('nlp516/dataset/development/train_en.tsv', 'rb') as file:
             dataset = pandas.read_csv(file, sep='\t')
 
 lines = []
