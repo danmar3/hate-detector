@@ -8,7 +8,6 @@ import random
 import operator
 
 
-
 with open("t.txt", "rb") as datafile:
     tagged_lines = []
     for line in datafile:
