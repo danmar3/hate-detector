@@ -43,4 +43,4 @@ Results are printed into a file called `results.txt`
   * Stage 1: pre-processing, project integration and project architecture, deployment and final results (Bayes, SVM, logistic regression, random forest, classification trees, gradient boosting, linear SGD)
   * Stage 2: LSTM language models
 
-
+**Github** repository: https://github.com/danmar3/hate-detector
