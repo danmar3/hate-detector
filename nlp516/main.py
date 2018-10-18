@@ -17,12 +17,12 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 
 def get_dataset(language, run_preprocess=True):
-    ''' load the training and validation dataset for a given language 
+    ''' load the training and validation dataset for a given language
     Args:
         language: 'spanish' or 'english'
-        run_preprocess: run preprocessing 
+        run_preprocess: run preprocessing
     Returns:
-        dataset: struct with preprocessed training and validation datasets 
+        dataset: struct with preprocessed training and validation datasets
     '''
     # ------------------------ load dataset -------------------- #
     if language == 'spanish':
@@ -67,12 +67,12 @@ def get_dataset(language, run_preprocess=True):
 
 
 def get_subtask_dataset(dataset, task):
-    ''' Extract dataset for a particular sub-task 
+    ''' Extract dataset for a particular sub-task
     Args:
-        dataset:
-        task: 
+        dataset: english or spanish dataset with HS, TR and AG labels
+        task (string): target task. Options are: 'HS', 'TR', 'AG'
     Returns:
-        dataset: struct with training and validation datasets corresponding to 
+        dataset: struct with training and validation datasets corresponding to
                  the given sub-task
     '''
     train = SimpleNamespace(x=dataset.train.text,
@@ -82,20 +82,21 @@ def get_subtask_dataset(dataset, task):
     return SimpleNamespace(train=train, valid=valid)
 
 
-def eval_metrics(model, dataset):
-    ''' Evaluate accuracy, precision, recal, and f1 scores for a given 
-    model on a given dataset'''
+def train_and_evaluate(model, dataset):
+    ''' Train model and Evaluate accuracy, precision, recal, and f1 scores for
+        a given model on a given dataset'''
     model.fit(dataset.train.x, dataset.train.y)
-    return {'accuracy': model.score(dataset.valid.x, dataset.valid.y),
-            'precision': model.precision_score(dataset.valid.x, dataset.valid.y),
-            'recall': model.recall_score(dataset.valid.x, dataset.valid.y),
-            'f1': model.f1_score(dataset.valid.x, dataset.valid.y)}
+    return {
+        'accuracy': model.score(dataset.valid.x, dataset.valid.y),
+        'precision': model.precision_score(dataset.valid.x, dataset.valid.y),
+        'recall': model.recall_score(dataset.valid.x, dataset.valid.y),
+        'f1': model.f1_score(dataset.valid.x, dataset.valid.y)}
 
 
 def instantiate_models(classifiers, vectorizers):
     ''' Instantiate all models to being tested.
-    Models are instantiated using a cartesian product between the list of 
-    classifiers and vectorizers '''
+        Models are instantiated using a cartesian product between the list of
+        classifiers and vectorizers '''
     models = {('MajorityBaseline', '-'): nlp516.model.MajorityBaseline()}
     models.update(
         {(c, v): nlp516.model.MlModel(classifier=classifiers[c](),
@@ -107,45 +108,52 @@ def instantiate_models(classifiers, vectorizers):
 
 
 def eval_models(classifiers, vectorizers, dataset):
-    
+    ''' evaluate the performance of a set of classifiers and vectorizers on
+        a given dataset '''
     models = instantiate_models(classifiers, vectorizers)
-    results = {key: eval_metrics(model, dataset=dataset)
+    results = {key: train_and_evaluate(model, dataset=dataset)
                for key, model in models.items()}
     return pd.DataFrame(results).transpose()
 
 
 def eval_doc2vec(classifiers, dataset):
+    ''' evaluate the performance of a set of classifiers on a given dataset
+        using doc2vec vectorizer '''
     models = {
-        (c, 'doc2vec'): nlp516.model.MlModel(classifier=classifiers[c](),
-                                             vectorizer=nlp516.vectorizer.Doc2Vec())
+        (c, 'doc2vec'): nlp516.model.MlModel(
+            classifier=classifiers[c](),
+            vectorizer=nlp516.vectorizer.Doc2Vec())
         for c in classifiers.keys()
     }
-    results = {key: eval_metrics(model, dataset=dataset)
+    results = {key: train_and_evaluate(model, dataset=dataset)
                for key, model in models.items()}
     return pd.DataFrame(results).transpose()
-
-
-classifiers = {'linear': lambda: sklearn.linear_model.LogisticRegression(),
-               'svc-linear': lambda: sklearn.svm.LinearSVC(),
-               'svc-rbf': lambda: sklearn.svm.SVC(gamma='scale'),
-               'tree': lambda: sklearn.tree.DecisionTreeClassifier(),
-               'forest': lambda: sklearn.ensemble.RandomForestClassifier(),
-               'bayes': lambda: sklearn.naive_bayes.GaussianNB(),
-               'linear-sgd': lambda: sklearn.linear_model.SGDClassifier(),
-               'gradient-boosted': lambda: sklearn.ensemble.GradientBoostingClassifier(),
-               # 'NuSVC-rbf': lambda: sklearn.svm.NuSVC(gamma='scale', nu=0.1),
-               # 'NuSVC-linear': lambda: sklearn.svm.NuSVC(gamma='scale', nu=0.1, kernel='linear')
-}
-# vectorizers = {'frequency': lambda: nlp516.vectorizer.Unigram2(100)}  #,
-vectorizers = {'frequency': lambda: nlp516.vectorizer.Unigram(100),
-               'presence': lambda: nlp516.vectorizer.UnigramPresence(100)
-}
 
 
 def print_results(string, file):
     ''' print results into stdout and results file '''
     print(string)
     print(string, file=file)
+
+
+CLASSIFIERS = {
+    'linear': lambda: sklearn.linear_model.LogisticRegression(),
+    'svc-linear': lambda: sklearn.svm.LinearSVC(),
+    'svc-rbf': lambda: sklearn.svm.SVC(gamma='scale'),
+    'tree': lambda: sklearn.tree.DecisionTreeClassifier(),
+    'forest': lambda: sklearn.ensemble.RandomForestClassifier(),
+    'bayes': lambda: sklearn.naive_bayes.GaussianNB(),
+    'linear-sgd': lambda: sklearn.linear_model.SGDClassifier(),
+    'gradient-boosted': lambda: sklearn.ensemble.GradientBoostingClassifier(),
+    # 'NuSVC-rbf': lambda: sklearn.svm.NuSVC(gamma='scale', nu=0.1),
+    # 'NuSVC-linear': lambda: sklearn.svm.NuSVC(gamma='scale', nu=0.1,
+    #                                           kernel='linear')
+}
+
+VECTORIZERS = {
+    'frequency': lambda: nlp516.vectorizer.Unigram(100),
+    'presence': lambda: nlp516.vectorizer.UnigramPresence(100)
+}
 
 
 def main():
@@ -161,7 +169,7 @@ def main():
                           file=result_file)
 
             results = eval_models(
-                classifiers=classifiers, vectorizers=vectorizers,
+                classifiers=CLASSIFIERS, vectorizers=VECTORIZERS,
                 dataset=get_subtask_dataset(dataset, task))
             print_results(results, file=result_file)
 
@@ -169,15 +177,13 @@ def main():
     dataset = get_dataset('english', run_preprocess=False)
     for task in tasks:
         print_results('-'*30 + '{} {}'.format('english', task) + '-'*30,
-                          file=result_file)
+                      file=result_file)
         results = eval_doc2vec(
-            classifiers=classifiers,
+            classifiers=CLASSIFIERS,
             dataset=get_subtask_dataset(dataset, task)
         )
         print_results(results, file=result_file)
-        
+
 
 if __name__ == '__main__':
     main()
-
-    

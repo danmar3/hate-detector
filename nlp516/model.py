@@ -2,32 +2,28 @@
 Classifiers for hate speech
 @author: Daniel L. Marino (marinodl@vcu.edu)
 """
-import operator
 import numpy as np
-import pandas as pd
 import sklearn.linear_model
 import sklearn.svm
-from sklearn.feature_extraction.text import CountVectorizer
 import nlp516.vectorizer
 
 
 class MlModel(object):
     ''' Model comprised of vectorizer and classifier '''
     def __init__(self, vectorizer, classifier):
-        ''' Model for text classification comprised of a vectorizer 
+        ''' Model for text classification comprised of a vectorizer
             and a classifier.
         Args:
-            vectorizer: model that converts tokenized text into 
+            vectorizer: model that converts tokenized text into
                         vector representations
-            classifier: model that classifies vectorized text into 
+            classifier: model that classifies vectorized text into
                          a set of categories
         '''
         self.vectorizer = vectorizer
         self.classifier = classifier
 
     def fit(self, x, y):
-        ''' Fit the vectorizer and classifier models using 
-        training dataset.
+        ''' Fit the vectorizer and classifier models using training dataset.
         Args:
             x (nparray): training inputs comprised of list of tags.
             y (nparray): training labels.
