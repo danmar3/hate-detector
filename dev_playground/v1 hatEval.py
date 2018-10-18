@@ -15,10 +15,18 @@ from sklearn.linear_model import LogisticRegression, SGDClassifier
 
 from sklearn.svm import LinearSVC, NuSVC
 
+"""
 TRAINING_EN_DATA = r'C:\Users\vsheth\Documents\CMSC 516 Advanced NLP\SemEval\Test data\public_development_en_Task A\public_development_en_train_en.tsv'
 TEST_EN_DATA = r'C:\Users\vsheth\Documents\CMSC 516 Advanced NLP\SemEval\Test data\public_development_en_Task A\public_development_en_dev_en.tsv'
 TRAINING_ES_DATA = r'C:\Users\vsheth\Documents\CMSC 516 Advanced NLP\SemEval\Test data\public_development_Spanish_Task A\public_development_es_train_es.tsv'
 TEST_ES_DATA = r'C:\Users\vsheth\Documents\CMSC 516 Advanced NLP\SemEval\Test data\public_development_Spanish_Task A\public_development_es_dev_es.tsv'
+"""
+
+TRAINING_EN_DATA = r'../hate-detector/nlp516/dataset/development/tra_en.tsv'
+TEST_EN_DATA = r'../hate-detector/nlp516/dataset/development/dev_en.tsv'
+TRAINING_ES_DATA = r'../hate-detector/nlp516/dataset/development/tra_es.tsv'
+TEST_ES_DATA = r'../hate-detector/nlp516/dataset/development/dev_es.tsv'
+
 
 def main():
     print("Start of the program")
