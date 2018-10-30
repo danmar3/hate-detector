@@ -20,9 +20,9 @@ def main():
               'nlp516': ['dataset/*.zip',
                          'dataset/development/*.tsv']
           },
-          install_requires=['nltk', 'pandas==0.23.4', 'pathlib', 'tqdm',
-                            'scikit-learn', 'scipy',
-                            'matplotlib', 'gensim'],
+          install_requires=['nltk==3.3', 'pandas==0.23.4', 'pathlib', 'tqdm',
+                            'scikit-learn==0.20.0', 'scipy==1.1.0',
+                            'matplotlib==3.0.0', 'gensim==3.6.0'],
           extras_require={
               'develop': ['nose', 'nose-timer', 'jupyter'],
           },
