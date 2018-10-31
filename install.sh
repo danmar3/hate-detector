@@ -2,7 +2,7 @@
 set -e
 # install prereqs
 python3 -m pip install --user --upgrade setuptools wheel virtualenv
-export PATH=~/.local/bin:$PATH
+# export PATH=~/.local/bin:$PATH
 # create virtual env
 virtualenv release_env -p python3
 source release_env/bin/activate
