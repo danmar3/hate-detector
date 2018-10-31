@@ -14,7 +14,7 @@ See hate-detector/documentation/Project_Orgaization.md for more information.
 
 ```
 sudo apt-get install python3 python3-pip
-sudo pip install virtualenv
+python3 -m pip install --upgrade setuptools wheel virtualenv 
 ```
 
 2. Run installation script:
