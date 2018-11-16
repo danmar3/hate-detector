@@ -22,7 +22,8 @@ def main():
           },
           install_requires=['nltk==3.3', 'pandas==0.23.4', 'pathlib', 'tqdm',
                             'scikit-learn==0.20.0', 'scipy==1.1.0',
-                            'matplotlib==3.0.0', 'gensim==3.6.0'],
+                            'matplotlib==3.0.0', 'gensim==3.6.0',
+                            'emoji==0.5.1'],
           extras_require={
               'develop': ['nose', 'nose-timer', 'jupyter'],
           },
