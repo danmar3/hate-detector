@@ -3,11 +3,15 @@ Feature selection and vectorization of corpus
 @author: Daniel L. Marino (marinodl@vcu.edu) (Primary author)
 @author: Paul Hudgins (hudginpj@vcu.edu) (Secondary author)
 """
+import uuid
+import emoji
+import string
 import operator
 import numpy as np
 import nlp516.data
 import gensim
 import gensim.models.doc2vec
+
 
 class Unigram(object):
     def __init__(self, n_features):
@@ -101,3 +105,60 @@ class Doc2Vec(object):
         x = np.stack(vectors, axis=0)
         return x
 
+
+class CharacterVectorizer(object):
+    START = uuid.uuid4()
+    END = uuid.uuid4()
+    EMOJI = uuid.uuid4()
+    NUMBER = uuid.uuid4()
+    UNKNOWN = uuid.uuid4()
+    lower_case = string.ascii_lowercase
+    upper_case = string.ascii_uppercase
+    whitespace = string.whitespace
+    punctuation = string.punctuation + '¿“”¡'
+    known = set(lower_case + upper_case + whitespace + punctuation)
+    known.update(set([START, END, EMOJI, NUMBER]))
+
+    def _filter_characters(self, sentence):
+        def replace_emoji(character):
+            return (self.EMOJI if character in emoji.EMOJI_UNICODE.values()
+                    else character)
+
+        def replace_numbers(character):
+            return (self.NUMBER if character in (str(i) for i in range(10))
+                    else character)
+
+        def replace_unknown(character):
+            return (self.UNKNOWN if character not in self.known
+                    else character)
+
+        def replace(character):
+            replace_list = [replace_emoji, replace_numbers, replace_unknown]
+            for func in replace_list:
+                character = func(character)
+            return character
+
+        return [replace(character) for character in sentence]
+
+    def fit(self, data):
+        vocabulary_keys = set([self.START, self.END])
+        for sentence in data:
+            vocabulary_keys.update(set(sentence))
+
+        vocabulary_keys = set(self._filter_characters(vocabulary_keys))
+        self.vocabulary = {
+            character: idx for idx, character
+            in enumerate(vocabulary_keys)}
+
+    def transform(self, data):
+        def unicode2sparse(record):
+            return [(self.vocabulary[k] if k in self.vocabulary
+                     else self.UNKNOWN)
+                    for k in record]
+        output = list()
+        for raw in data:
+            filtered = self._filter_characters(raw)
+            record = [self.START] + filtered + [self.END]
+            sparse = unicode2sparse(record)
+            output.append(np.array(sparse))
+        return output
