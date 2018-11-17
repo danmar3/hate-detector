@@ -162,3 +162,66 @@ class CharacterVectorizer(object):
             sparse = unicode2sparse(record)
             output.append(np.array(sparse))
         return output
+
+
+class OneHotSequenceEncoder(object):
+    def __init__(self, n_classes, padding=True, time_major=False):
+        """transform a sparse representation of a sequence into a sequence of
+            one-hot encoded vectors.
+        Args:
+            n_classes (int): number of classes represented by the one hot
+                encoding.
+            padding (bool): add zero padding to the sequences.
+            time_major (bool):  The shape format of the output array.
+                If true, the output will be shaped
+                [max_time, batch_size, depth].
+                If false, the output will be shaped
+                [batch_size, max_time, depth].
+                This only applies if padding is enabled.
+        Returns:
+            output: If padding is enabled, output is an np.array with the
+                padded one-hot representation of the input sequences.
+                If padding is disabled, output is a list of np.arrays
+                representing the one-hot encoded sequences.
+        """
+        self.n_classes = n_classes
+        self.padding = True
+        self.time_major = time_major
+
+    def fit(self, data):
+        return
+
+    def transform(self, data):
+        max_len = max(len(record) for record in data)
+
+        def sparse2dense(sparse):
+            dense = np.zeros([len(sparse), self.n_classes])
+            np.put_along_axis(dense, indices=np.expand_dims(sparse, 1),
+                              values=1.0, axis=1)
+            if self.padding:
+                padding = np.zeros([max_len - len(sparse), self.n_classes])
+                dense = np.concatenate([dense, padding])
+            return dense
+        output = list()
+        for record in data:
+            output.append(sparse2dense(record))
+        if self.padding:
+            output = np.stack(output, axis=0)
+            if self.time_major:
+                output = np.transpose(output, [1, 0, 2])
+        return output
+
+
+class StackedVectorizer(object):
+    def __init__(self, vectorizers):
+        self.vectorizers = vectorizers
+
+    def fit(self, data):
+        for vect in self.vectorizers:
+            vect.fit(data)
+            data = vect.transform(data)
+
+    def transform(self, data):
+        for vect in self.vectorizers:
+            data = vect.transform(data)
+        return data
