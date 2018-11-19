@@ -9,7 +9,7 @@ from setuptools.command.install import install
 # for development installation: pip install -e .
 #                               pip install -e .[develop]
 # for distribution: python setup.py sdist #bdist_wheel
-#                   pip install dist/twodlearn_version.tar.gz
+#                   pip install dist/<name>.tar.gz
 
 
 def main():

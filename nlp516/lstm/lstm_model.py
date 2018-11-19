@@ -181,7 +181,7 @@ class LstmEstimator(object):
         # Convert the inputs to a Dataset.
         dataset = tf.data.Dataset.from_tensor_slices((features, labels))
         # Shuffle, repeat, and batch the examples.
-        dataset = dataset.shuffle(1000).repeat().batch(batch_size)
+        dataset = dataset.shuffle(500).repeat().batch(batch_size)
         dataset = dataset.map(lambda x, y: (tf.cast(x, TF_FLOAT),
                                             tf.cast(y, TF_INT)))
         return dataset
@@ -222,12 +222,21 @@ class LstmEstimator(object):
             )
 
     def fit(self, x, y, steps=1000):
+        # self.estimator.train(
+        #     input_fn=lambda: self.train_input_fn(x, y, self.batch_size),
+        #     steps=steps
+        #    )
         self.estimator.train(
-            input_fn=lambda: self.train_input_fn(x, y, self.batch_size),
+            input_fn=lambda: tf.estimator.inputs.numpy_input_fn(
+                x, y, batch_size=self.batch_size, num_epochs=None),
             steps=steps
             )
 
     def evaluate(self, x, y):
+        # eval_result = self.estimator.evaluate(
+        #     input_fn=lambda: self.eval_input_fn(x, y, self.batch_size))
         eval_result = self.estimator.evaluate(
-            input_fn=lambda: self.eval_input_fn(x, y, self.batch_size))
+            input_fn=tf.estimator.inputs.numpy_input_fn(
+                x, y, batch_size=self.batch_size, num_epochs=1)
+            )
         return eval_result
