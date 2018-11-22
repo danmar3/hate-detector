@@ -11,6 +11,11 @@ import zipfile
 import pandas as pd
 from nltk.corpus import stopwords
 
+_PROJECT_FOLDER = os.path.dirname(os.path.abspath(__file__))
+TMP_FOLDER = os.path.join(_PROJECT_FOLDER, 'tmp/dataset')
+if not os.path.exists(TMP_FOLDER):
+    os.makedirs(TMP_FOLDER)
+
 
 def download_nltk_packets():
     nltk.download('stopwords')
@@ -126,7 +131,10 @@ def hashtag_camelcase_map(tokens):
 
 
 def to_lowercase(tokens):
-    return [t.lower() for t in tokens]
+    if isinstance(tokens, str):
+        return tokens.lower()
+    else:
+        return [t.lower() for t in tokens]
 
 
 class RemoveStopWords(object):
@@ -148,11 +156,19 @@ def remove_words_with_numbers(tokens):
                        tokens))
 
 
+def remove_numbers(sentence):
+    remove_digits = str.maketrans('', '', string.digits)
+    return sentence.translate(remove_digits)
+
+
 def remove_punctuation(tokens):
     ''' remove punctuation from a list of tokens '''
     table = str.maketrans('', '', string.punctuation + '¿“”¡')
-    stripped = [w.translate(table) for w in tokens]
-    return [w for w in stripped if w]
+    if isinstance(tokens, str):
+        return tokens.translate(table)
+    else:
+        stripped = [w.translate(table) for w in tokens]
+        return [w for w in stripped if w]
 
 
 def find_emojis(tokens):
