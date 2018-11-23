@@ -1,8 +1,17 @@
 # Dataset
 *.zip
 *.tsv
+*.csv
 nlp516/dataset/*
 *results*.txt
+*corpus*.txt
+
+
+# Models
+*.pkl
+*.model
+*.npy
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
