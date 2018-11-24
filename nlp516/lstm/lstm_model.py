@@ -34,11 +34,10 @@ class ZeroPaddedSequence(object):
         self.time_major = time_major
         with tf.name_scope('padded_input'):
             self.value = inputs
-            self.mask = tf.reduce_sum(self.value, axis=-1)
+            _mask = tf.reduce_sum(tf.abs(self.value), axis=-1)
+            self.mask = tf.cast(tf.greater(_mask, 0), TF_INT)
             time_axis = (0 if self.time_major else 1)
-            self.sequence_length = tf.reduce_sum(
-                tf.cast(tf.greater(self.mask, 0), TF_INT),
-                axis=time_axis)
+            self.sequence_length = tf.reduce_sum(self.mask, axis=time_axis)
 
 
 class BidirectionalCell(object):
@@ -213,8 +212,10 @@ class AggreagtedLstm(LstmModel):
         # x_ta = tf.TensorArray(dtype=x.dtype, size=tf.shape(x)[time_axis])
         # x_ta.unstack()  # TODO)
         logits = dense(x)
+        sentence_mask = tf.cast(self.rnn.inputs.mask[..., tf.newaxis],
+                                TF_FLOAT)
         predictions = tf.reduce_sum(
-            tf.nn.sigmoid(logits)*self.rnn.inputs.mask[..., tf.newaxis],
+            tf.nn.sigmoid(logits)*sentence_mask,
             axis=time_axis)
         predictions = predictions/tf.cast(self.rnn.inputs.sequence_length,
                                           predictions.dtype)[..., tf.newaxis]
@@ -240,7 +241,7 @@ class AggreagtedLstm(LstmModel):
             labels=tf.cast(labels, TF_FLOAT),
             logits=self.classifier.logits)
         loss = tf.reduce_sum(loss, tuple(range(2, loss.shape.ndims)))
-        loss = tf.reduce_sum(loss * self.rnn.inputs.mask,
+        loss = tf.reduce_sum(loss * tf.cast(self.rnn.inputs.mask, loss.dtype),
                              axis=time_axis)
         loss = tf.reduce_mean(
             loss / tf.cast(self.rnn.inputs.sequence_length,

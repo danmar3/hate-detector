@@ -32,10 +32,10 @@ def get_dataset(language):
         train, 'text', nlp516.data.remove_numbers)
     valid = nlp516.data.map_column(
         valid, 'text', nlp516.data.remove_numbers)
-    train = nlp516.data.map_column(
-        train, 'text', nlp516.data.remove_punctuation)
-    valid = nlp516.data.map_column(
-        valid, 'text', nlp516.data.remove_punctuation)
+    # train = nlp516.data.map_column(
+    #    train, 'text', nlp516.data.remove_punctuation)
+    # valid = nlp516.data.map_column(
+    #    valid, 'text', nlp516.data.remove_punctuation)
     train = nlp516.data.map_column(
         train, 'text', nlp516.data.to_lowercase)
     valid = nlp516.data.map_column(

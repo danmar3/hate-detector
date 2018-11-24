@@ -199,6 +199,17 @@ def remove_punctuation(tokens):
         return [w for w in stripped if w]
 
 
+def replace_punctuation(tokens):
+    ''' replace punctuation from a list of tokens '''
+    punctuation = '.-;"“”' + "'"
+    table = str.maketrans(punctuation, ' '*len(punctuation))
+    if isinstance(tokens, str):
+        return tokens.translate(table)
+    else:
+        stripped = [w.translate(table) for w in tokens]
+        return [w for w in stripped if w]
+
+
 def find_emojis(tokens):
     ''' find the emojis on a list of tokens '''
     return re.findall(r'[^\w\s,]', ' '.join(tokens))
