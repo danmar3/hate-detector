@@ -9,7 +9,7 @@ import pandas
 import numpy
 import random
 
-import word2vec_train
+import embeddings
 
 
 # with open('../nlp516/dataset/development/train_en.tsv', 'rb') as f:
@@ -70,14 +70,23 @@ import word2vec_train
 # #clf_eval(SVC())
 # # clf_eval(LogisticRegression())
 
+
+# def load_model(path):
+#     model = gensim.models.KeyedVectors.load(path)
+#     return model
+
+# def vectorize(word, model):
+#     try:
+#         return model.word_vec(word)
+#     except KeyError:
+#         return [0.0] * model.vector_size
+
+
 def test():
-    from word2vec_train import vectorize
-    model = word2vec_train.load_model()
-    print(model.most_similar(positive="refugee"))
-    # print(model.wv.most_similar(positive="refugee"))
-    # print(model.wv.vector_size)
-    #print(model.word_vec("refugee"))
-    print(vectorize("is", model))
+    model = embeddings.load_model("models/test.model")
+    print(embeddings.vectorize("immigrant", model))
+    print(model.most_similar("immigrant"))
+    print(model)
     
     
 

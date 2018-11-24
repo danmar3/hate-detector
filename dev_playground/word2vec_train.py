@@ -7,15 +7,10 @@ import zipfile
 import pandas
 import numpy
 import datetime
-from gensim.models.doc2vec import Doc2Vec, TaggedDocument
-
-
-
-
 
 def get_text_docs(filename, n):
     documents = []
-    with open("corpus.txt") as inf:
+    with open(filename) as inf:
         count = 0
         for line in inf:
             prep = gensim.utils.simple_preprocess(line)
@@ -56,25 +51,17 @@ def train_model():
 
     corpus = []
     #corpus += get_text_docs("corpus.txt", 100000)
-    corpus += get_text_docs("filtered_corpus_mixed.txt", 10000)
+    corpus += get_text_docs("filtered_corpus_mixed.txt", 210000)
     #corpus += training_docs
 
-    #documents = [TaggedDocument(doc, [i]) for i, doc in enumerate(corpus)]
-    documents = corpus
+    print("corpus length:", len(corpus))
     print("training vectorizer....")
-    #model = Doc2Vec(tagged_docs, vector_size=300, window=2, min_count=1, workers=4)
-    model = gensim.models.Word2Vec(
-        documents,
-        size=300,
-        window=10,
-        min_count=2,
-        workers=4)
-    model.train(documents, total_examples=len(documents), epochs=10)
+    model = gensim.models.Word2Vec(corpus, size=300, window=10, min_count=2, workers=4)
+    model.train(corpus, total_examples=len(corpus), epochs=10)
     print("trained vectorizer")
 
-    model.save("word2vec.model")
+    #model.save("word2vec.model")
     model.wv.save("w2v_wv.model")
-    print("saved model")
     print("runtime", datetime.datetime.now()-start)
 
     print(model.wv.most_similar("woman"))
