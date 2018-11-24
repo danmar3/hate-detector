@@ -176,23 +176,33 @@ class LstmModel(object):
 
 class BiLstmModel(LstmModel):
     def _define_cell(self, num_units, keep_prob):
-        assert len(num_units) == 1, 'not implemented'
-        return BidirectionalCell(num_units=num_units[0])
+        # assert len(num_units) == 1, 'not implemented'
+        cells = [BidirectionalCell(num_units=units)
+                 for i, units in enumerate(num_units)]
+        return StackedCell(cells=cells)
 
     def _run_rnn(self, inputs, batch_size):
-        state_initial = (
-            self.cell.forward.zero_state(batch_size, dtype=TF_FLOAT),
-            self.cell.backward.zero_state(batch_size, dtype=TF_FLOAT))
-        outputs, state_final = tf.nn.bidirectional_dynamic_rnn(
-            cell_fw=self.cell.forward,
-            cell_bw=self.cell.backward,
-            inputs=inputs.value,
-            initial_state_fw=state_initial[0],
-            initial_state_bw=state_initial[1],
-            sequence_length=inputs.sequence_length,
-            time_major=self.time_major
-            )
-        outputs = tf.concat(outputs, axis=-1)
+        state_initial = list()
+        state_final = list()
+        sequence_length = inputs.sequence_length
+        inputs = inputs.value
+        for i, cell_i in enumerate(self.cell.cells):
+            state_initial.append(
+                (cell_i.forward.zero_state(batch_size, dtype=TF_FLOAT),
+                 cell_i.backward.zero_state(batch_size, dtype=TF_FLOAT))
+                                 )
+            outputs, state_final = tf.nn.bidirectional_dynamic_rnn(
+                cell_fw=cell_i.forward,
+                cell_bw=cell_i.backward,
+                inputs=inputs,
+                initial_state_fw=state_initial[-1][0],
+                initial_state_bw=state_initial[-1][1],
+                sequence_length=sequence_length,
+                time_major=self.time_major,
+                scope='rnnlayer_{}'.format(i)
+                )
+            outputs = tf.concat(outputs, axis=-1)
+            inputs = outputs
         return state_initial, state_final, outputs
 
 
