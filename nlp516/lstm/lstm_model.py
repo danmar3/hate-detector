@@ -273,7 +273,6 @@ class LstmEstimator(object):
             predictions = {
                 'class_ids': predicted_classes,
                 'probabilities': model.classifier.predictions,
-                'logits': model.classifier.logits,
             }
             return tf.estimator.EstimatorSpec(mode, predictions=predictions)
         # Train

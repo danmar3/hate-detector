@@ -5,16 +5,24 @@ Dataset loading and preprocessing
 import os
 import re
 import nltk
+import getpass
 import nlp516
 import string
 import zipfile
 import pandas as pd
 from nltk.corpus import stopwords
 
-_PROJECT_FOLDER = os.path.dirname(os.path.abspath(__file__))
-TMP_FOLDER = os.path.join(_PROJECT_FOLDER, 'tmp/dataset')
-if not os.path.exists(TMP_FOLDER):
-    os.makedirs(TMP_FOLDER)
+_PROJECT_FOLDER = os.path.dirname(nlp516.__file__)
+DATA_FOLDER = os.path.join(_PROJECT_FOLDER, 'dataset')
+
+if getpass.getuser() == 'marinodl':
+    TMP_FOLDER = '/data/marinodl/tmp/nlp516data/'
+    if not os.path.exists(TMP_FOLDER):
+        os.makedirs(TMP_FOLDER)
+else:
+    TMP_FOLDER = os.path.join(_PROJECT_FOLDER, 'tmp/dataset')
+    if not os.path.exists(TMP_FOLDER):
+        os.makedirs(TMP_FOLDER)
 
 
 def download_nltk_packets():
@@ -44,6 +52,16 @@ class PublicEnglishDataset(object):
             self.valid = pd.read_csv(file, sep='\t')
 
 
+class DevelopmentEnglishA(PublicEnglishDataset):
+    src = os.path.join(os.path.dirname(nlp516.__file__),
+                       'dataset/development_a/public_development_en')
+
+
+class DevelopmentEnglishB(PublicEnglishDataset):
+    src = os.path.join(os.path.dirname(nlp516.__file__),
+                       'dataset/development_b/public_development_en')
+
+
 class PublicSpanishDataset(object):
     src = os.path.join(os.path.dirname(nlp516.__file__),
                        'dataset/development')
@@ -53,6 +71,16 @@ class PublicSpanishDataset(object):
             self.train = pd.read_csv(file, sep='\t')
         with open(os.path.join(self.src, 'dev_es.tsv')) as file:
             self.valid = pd.read_csv(file, sep='\t')
+
+
+class DevelopmentSpanishA(PublicSpanishDataset):
+    src = os.path.join(os.path.dirname(nlp516.__file__),
+                       'dataset/development_a/public_development_es')
+
+
+class DevelopmentSpanishB(PublicSpanishDataset):
+    src = os.path.join(os.path.dirname(nlp516.__file__),
+                       'dataset/development_b/public_development_es')
 
 
 def map_column(df, column, func):
