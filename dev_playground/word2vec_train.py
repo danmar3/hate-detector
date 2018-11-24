@@ -1,43 +1,17 @@
-"""Experiments with doc2vec
+"""
 @author: Paul Hudgins (hudginspj@vcu.edu)
 """
 import gensim
-#import nlp516.data as data
 import os
 import zipfile
-#import nlp516
 import pandas
 import numpy
+import datetime
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 
-#import gensim.downloader as api
 
 
-def get_davidson_docs():
-    with open('../nlp516/dataset/davidson_labeled_data.csv', 'rb') as file:
-        dataset = pandas.read_csv(file)#, sep='\t')
 
-    documents = []
-    for i in range(dataset.shape[0]):
-        line = dataset.iloc[i].tweet
-        prep = gensim.utils.simple_preprocess(line)
-        documents.append(prep)
-    print("davidson length", len(documents))
-    return documents
-
-
-def get_sentiment140_docs():
-    with open('../nlp516/dataset/sentiment140.csv', 'rb') as file:
-        dataset = pandas.read_csv(file)#, sep='\t')
-
-    documents = []
-    for i in range(dataset.shape[0]):
-    #for i in range(10000):
-        line = dataset.iloc[i].tweet
-        prep = gensim.utils.simple_preprocess(line)
-        documents.append(prep) 
-    print("sentiment length", len(documents))
-    return documents
 
 def get_text_docs(filename, n):
     documents = []
@@ -58,7 +32,6 @@ def get_training_docs():
     documents = []
     labels = []
     for i in range(dataset.shape[0]):
-    #   print()
         line = dataset.iloc[i].text
         lines.append(line)
         label = dataset.iloc[i].HS
@@ -71,9 +44,10 @@ def get_training_docs():
 
 
 #########################################################################
-import datetime
 
-if __name__ == "__main__":
+
+
+def train_model():
     print("hello")
     if input("Retrain model?(yes/no)") != "yes":
         exit()
@@ -81,18 +55,41 @@ if __name__ == "__main__":
     training_docs, labels = get_training_docs()
 
     corpus = []
-    # corpus += get_sentiment140_docs()
-    # corpus += get_davidson_docs()
     #corpus += get_text_docs("corpus.txt", 100000)
-    corpus += get_text_docs("filtered_corpus_mixed.txt", 100000)
+    corpus += get_text_docs("filtered_corpus_mixed.txt", 10000)
     #corpus += training_docs
 
-    tagged_docs = [TaggedDocument(doc, [i]) for i, doc in enumerate(corpus)]
+    #documents = [TaggedDocument(doc, [i]) for i, doc in enumerate(corpus)]
+    documents = corpus
     print("training vectorizer....")
-    model = Doc2Vec(tagged_docs, vector_size=300, window=2, min_count=1, workers=4)
-    print("trained vectorizor")
+    #model = Doc2Vec(tagged_docs, vector_size=300, window=2, min_count=1, workers=4)
+    model = gensim.models.Word2Vec(
+        documents,
+        size=300,
+        window=10,
+        min_count=2,
+        workers=4)
+    model.train(documents, total_examples=len(documents), epochs=10)
+    print("trained vectorizer")
 
-    model.save("test.model")
+    model.save("word2vec.model")
+    model.wv.save("w2v_wv.model")
     print("saved model")
     print("runtime", datetime.datetime.now()-start)
 
+    print(model.wv.most_similar("woman"))
+    print(model)
+
+def load_model():
+    #model = gensim.models.Word2Vec.load("word2vec.model")
+    model = gensim.models.KeyedVectors.load("w2v_wv.model")
+    return model
+
+def vectorize(word, model):
+    try:
+        return model.word_vec(word)
+    except KeyError:
+        return [0.0] * model.vector_size
+
+if __name__ == "__main__":
+    train_model()

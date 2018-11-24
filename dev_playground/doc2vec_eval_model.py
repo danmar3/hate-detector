@@ -15,9 +15,8 @@ print("hello")
 import gensim.downloader as api
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 
-# with open('nlp516/dataset/development/train_en.tsv', 'rb') as f:
-            # dataset = pandas.read_csv(f, sep='\t')
-with open('nlp516/dataset/development/train_en.tsv', 'rb') as f:
+
+with open('../nlp516/dataset/development/train_en.tsv', 'rb') as f:
             dataset = pandas.read_csv(f, sep='\t')
 
 lines = []

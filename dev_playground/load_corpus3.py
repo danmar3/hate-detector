@@ -62,7 +62,7 @@ def predict_tweet(classifier, vectorizer, doc):
     return classifier.predict(vector)
 
 def get_train_data():
-    with open('nlp516/dataset/development/train_en.tsv', 'rb') as file:
+    with open('../nlp516/dataset/development/train_en.tsv', 'rb') as file:
             dataset = pandas.read_csv(file, sep='\t')
 
     lines = []
