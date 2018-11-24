@@ -34,11 +34,10 @@ class ZeroPaddedSequence(object):
         self.time_major = time_major
         with tf.name_scope('padded_input'):
             self.value = inputs
-            self.mask = tf.reduce_sum(self.value, axis=-1)
+            _mask = tf.reduce_sum(tf.abs(self.value), axis=-1)
+            self.mask = tf.cast(tf.greater(_mask, 0), TF_INT)
             time_axis = (0 if self.time_major else 1)
-            self.sequence_length = tf.reduce_sum(
-                tf.cast(tf.greater(self.mask, 0), TF_INT),
-                axis=time_axis)
+            self.sequence_length = tf.reduce_sum(self.mask, axis=time_axis)
 
 
 class BidirectionalCell(object):
@@ -177,23 +176,33 @@ class LstmModel(object):
 
 class BiLstmModel(LstmModel):
     def _define_cell(self, num_units, keep_prob):
-        assert len(num_units) == 1, 'not implemented'
-        return BidirectionalCell(num_units=num_units[0])
+        # assert len(num_units) == 1, 'not implemented'
+        cells = [BidirectionalCell(num_units=units)
+                 for i, units in enumerate(num_units)]
+        return StackedCell(cells=cells)
 
     def _run_rnn(self, inputs, batch_size):
-        state_initial = (
-            self.cell.forward.zero_state(batch_size, dtype=TF_FLOAT),
-            self.cell.backward.zero_state(batch_size, dtype=TF_FLOAT))
-        outputs, state_final = tf.nn.bidirectional_dynamic_rnn(
-            cell_fw=self.cell.forward,
-            cell_bw=self.cell.backward,
-            inputs=inputs.value,
-            initial_state_fw=state_initial[0],
-            initial_state_bw=state_initial[1],
-            sequence_length=inputs.sequence_length,
-            time_major=self.time_major
-            )
-        outputs = tf.concat(outputs, axis=-1)
+        state_initial = list()
+        state_final = list()
+        sequence_length = inputs.sequence_length
+        inputs = inputs.value
+        for i, cell_i in enumerate(self.cell.cells):
+            state_initial.append(
+                (cell_i.forward.zero_state(batch_size, dtype=TF_FLOAT),
+                 cell_i.backward.zero_state(batch_size, dtype=TF_FLOAT))
+                                 )
+            outputs, state_final = tf.nn.bidirectional_dynamic_rnn(
+                cell_fw=cell_i.forward,
+                cell_bw=cell_i.backward,
+                inputs=inputs,
+                initial_state_fw=state_initial[-1][0],
+                initial_state_bw=state_initial[-1][1],
+                sequence_length=sequence_length,
+                time_major=self.time_major,
+                scope='rnnlayer_{}'.format(i)
+                )
+            outputs = tf.concat(outputs, axis=-1)
+            inputs = outputs
         return state_initial, state_final, outputs
 
 
@@ -213,8 +222,10 @@ class AggreagtedLstm(LstmModel):
         # x_ta = tf.TensorArray(dtype=x.dtype, size=tf.shape(x)[time_axis])
         # x_ta.unstack()  # TODO)
         logits = dense(x)
+        sentence_mask = tf.cast(self.rnn.inputs.mask[..., tf.newaxis],
+                                TF_FLOAT)
         predictions = tf.reduce_sum(
-            tf.nn.sigmoid(logits)*self.rnn.inputs.mask[..., tf.newaxis],
+            tf.nn.sigmoid(logits)*sentence_mask,
             axis=time_axis)
         predictions = predictions/tf.cast(self.rnn.inputs.sequence_length,
                                           predictions.dtype)[..., tf.newaxis]
@@ -240,7 +251,7 @@ class AggreagtedLstm(LstmModel):
             labels=tf.cast(labels, TF_FLOAT),
             logits=self.classifier.logits)
         loss = tf.reduce_sum(loss, tuple(range(2, loss.shape.ndims)))
-        loss = tf.reduce_sum(loss * self.rnn.inputs.mask,
+        loss = tf.reduce_sum(loss * tf.cast(self.rnn.inputs.mask, loss.dtype),
                              axis=time_axis)
         loss = tf.reduce_mean(
             loss / tf.cast(self.rnn.inputs.sequence_length,
@@ -273,7 +284,6 @@ class LstmEstimator(object):
             predictions = {
                 'class_ids': predicted_classes,
                 'probabilities': model.classifier.predictions,
-                'logits': model.classifier.logits,
             }
             return tf.estimator.EstimatorSpec(mode, predictions=predictions)
         # Train

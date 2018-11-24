@@ -17,21 +17,25 @@ TMP_DATA = '/data/marinodl/tmp/nlp516data/'
 
 def get_dataset(language):
     if language == 'spanish':
-        raw = nlp516.data.PublicSpanishDataset()
+        raw = nlp516.data.DevelopmentSpanishB()
     elif language == 'english':
-        raw = nlp516.data.PublicEnglishDataset()
+        raw = nlp516.data.DevelopmentEnglishB()
     train = nlp516.data.map_column(
         raw.train, 'text', nlp516.data.remove_urls_map)
     valid = nlp516.data.map_column(
         raw.valid, 'text', nlp516.data.remove_urls_map)
+    # remove very long tweets (probably outliers)
+    train = train.loc[(train.text.apply(lambda x: len(x)) < 500), :]
+    valid = valid.loc[(valid.text.apply(lambda x: len(x)) < 500), :]
+    #
     train = nlp516.data.map_column(
         train, 'text', nlp516.data.remove_numbers)
     valid = nlp516.data.map_column(
         valid, 'text', nlp516.data.remove_numbers)
-    train = nlp516.data.map_column(
-        train, 'text', nlp516.data.remove_punctuation)
-    valid = nlp516.data.map_column(
-        valid, 'text', nlp516.data.remove_punctuation)
+    # train = nlp516.data.map_column(
+    #    train, 'text', nlp516.data.remove_punctuation)
+    # valid = nlp516.data.map_column(
+    #    valid, 'text', nlp516.data.remove_punctuation)
     train = nlp516.data.map_column(
         train, 'text', nlp516.data.to_lowercase)
     valid = nlp516.data.map_column(
