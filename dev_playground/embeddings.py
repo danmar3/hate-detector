@@ -71,9 +71,14 @@ def vectorize(word, model):
     except KeyError:
         return [0.0] * model.vector_size
 
+def glovetest():
+    import glove
+
+
 if __name__ == "__main__":
     #train_model("models/test.model", "corpus.txt", 10000, train_fasttext)
-    train_model("models/wor2vec_filtered_200k.model", "filtered_corpus_mixed.txt", 200000, train_word2vec)
-    train_model("models/wor2vec_raw_200k.model", "corpus.txt", 200000, train_word2vec)
-    train_model("models/fasttext_filtered_200k.model", "filtered_corpus_mixed.txt", 200000, train_fasttext)
-    train_model("models/fasttext_raw_200k.model", "corpus.txt", 200000, train_fasttext)
+    # train_model("models/wor2vec_filtered_200k.model", "filtered_corpus_mixed.txt", 200000, train_word2vec)
+    # train_model("models/wor2vec_raw_200k.model", "corpus.txt", 200000, train_word2vec)
+    # train_model("models/fasttext_filtered_200k.model", "filtered_corpus_mixed.txt", 200000, train_fasttext)
+    # train_model("models/fasttext_raw_200k.model", "corpus.txt", 200000, train_fasttext)
+    glovetest()

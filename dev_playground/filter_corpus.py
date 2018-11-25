@@ -20,13 +20,13 @@ from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 
 #divider = 8000000
 
-def main():
+def main(corpus_path, train_data_path, num_tweets):
     print("hello")
     pass
-    classifier, vector = train_cls()
+    classifier, vector = train_cls(corpus_path, train_data_path, num_tweets)
     print("done training classifier")
 
-    with open("corpus.txt") as inf:
+    with open(corpus_path) as inf:
         with open("filtered_corpus.txt", 'w') as outf:
             count = 0
             positives = []
@@ -45,14 +45,14 @@ def main():
 
                 if count % 10000 == 0:
                     print(count)
-                if count > 4000000:
+                if count >= num_tweets:
                     break
             # print("--------- negatives  ------------")
             # for l in negatives:
             #     print(l)
-            print("--------- positives ------------")
-            for l in positives:
-                print(l)
+            # print("--------- positives ------------")
+            # for l in positives:
+            #     print(l)
             print("positives/negatives", len(positives), len(negatives))
             print(count)
 
@@ -62,8 +62,8 @@ def predict_tweet(classifier, vectorizer, doc):
         
     return classifier.predict(vector)
 
-def get_train_data():
-    with open('../nlp516/dataset/development/train_en.tsv', 'rb') as file:
+def get_train_data(train_data_path):
+    with open(train_data_path, 'rb') as file:
             dataset = pandas.read_csv(file, sep='\t')
 
     lines = []
@@ -81,20 +81,20 @@ def get_train_data():
     return lines, labels, documents
 
 
-def get_mixed_data(corpus_path, train_data_path, divider):
+def get_mixed_data(corpus_path, train_data_path, num_tweets):
     tr_lines, tr_labels, tr_documents = get_train_data(train_data_path)
     n = len(tr_lines)
 
     corp_lines = []
-    with open("corpus.txt") as inf:
+    with open(corpus_path) as inf:
         count = 0
         for line in inf:
             line = line.strip()
             count += 1
 
-            if count == divider:
+            if count == num_tweets:
                 print("reached divider")
-            elif count > divider and count <= divider + n:
+            elif count > num_tweets and count <= num_tweets + n:
                 corp_lines.append(line)
     lines = []
     labels = []
@@ -107,9 +107,9 @@ def get_mixed_data(corpus_path, train_data_path, divider):
     return lines, labels
 
 
-def train_cls():
-    lines, labels, documents = get_train_data()
-    lines, labels = get_mixed_data()
+def train_cls(corpus_path, train_data_path, num_tweets):
+    #lines, labels, documents = get_train_data()
+    lines, labels = get_mixed_data(corpus_path, train_data_path, num_tweets)
     vectorizer = CountVectorizer(max_features=5000)
     X = vectorizer.fit_transform(lines).toarray()
     #classifier = RandomForestClassifier()
@@ -123,5 +123,6 @@ def train_cls():
 
 
 if __name__ == "__main__":
-    main('corpus.txt', '../nlp516/dataset/development/train_en.tsv', 3000000, 8000000)
+    main('corpus.txt', '../nlp516/dataset/development/train_en.tsv', 9500000)
+    #main('corpus_es.txt', '../nlp516/dataset/development/train_es.tsv', 3000)
     #get_mixed_data()
