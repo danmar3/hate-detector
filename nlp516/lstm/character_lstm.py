@@ -1,9 +1,12 @@
+"""
+LSTM model for hate-detector using character representations
+@author: Daniel L. Marino (marinodl@vcu.edu)
+"""
 import os
-import re
-import nltk
 import nlp516
 import pickle
-import sklearn
+import getpass
+import nlp516
 import nlp516.model
 import numpy as np
 import pandas as pd
@@ -11,15 +14,21 @@ from types import SimpleNamespace
 from sklearn.feature_extraction.text import CountVectorizer
 import tensorflow as tf
 
-TMP_MODEL = '/data/marinodl/tmp/nlp516'
-TMP_DATA = '/data/marinodl/tmp/nlp516data/'
+
+_PROJECT_FOLDER = os.path.dirname(nlp516.__file__)
+if getpass.getuser() == 'marinodl':
+    TMP_FOLDER = '/data/marinodl/tmp/nlp516/character_lstm'
+    if not os.path.exists(TMP_FOLDER):
+        os.makedirs(TMP_FOLDER)
+else:
+    TMP_FOLDER = os.path.join(_PROJECT_FOLDER, 'tmp/character_lstm')
+    if not os.path.exists(TMP_FOLDER):
+        os.makedirs(TMP_FOLDER)
+TMP_MODEL = os.path.join(TMP_FOLDER, 'model')
+TMP_DATA = os.path.join(TMP_FOLDER, 'data')
 
 
-def get_dataset(language):
-    if language == 'spanish':
-        raw = nlp516.data.DevelopmentSpanishB()
-    elif language == 'english':
-        raw = nlp516.data.DevelopmentEnglishB()
+def preprocess(raw):
     train = nlp516.data.map_column(
         raw.train, 'text', nlp516.data.remove_urls_map)
     valid = nlp516.data.map_column(
@@ -45,9 +54,10 @@ def get_dataset(language):
     return raw
 
 
-def vectorize_dataset(vectorizer, raw,
-                      filename='/data/marinodl/tmp/nlp516data/preprocessed',
+def vectorize_dataset(vectorizer, raw, filename=None,
                       ignore_cache=False):
+    if filename is None:
+        filename = os.path.join(TMP_DATA, 'preprocessed')
     if not os.path.exists(filename) or ignore_cache:
         train_x = vectorizer.transform(raw.train.text)
         train_y = np.expand_dims(raw.train.HS.values, 1)
@@ -67,13 +77,11 @@ def vectorize_dataset(vectorizer, raw,
         return pickle.load(file)
 
 
-def main():
-    session = tf.InteractiveSession()
-    language = 'english'
-    raw = get_dataset(language)
+def run_experiment(raw_df, name, n_train_steps=10):
+    corpus = preprocess(raw_df)
     # 1. Vectorizer
     character_vect = nlp516.vectorizer.CharacterVectorizer()
-    character_vect.fit(raw.train.text)
+    character_vect.fit(corpus.train.text)
     vectorizer = nlp516.vectorizer.StackedVectorizer(
         vectorizers=[character_vect,
                      nlp516.vectorizer.OneHotSequenceEncoder(
@@ -88,13 +96,15 @@ def main():
         learning_rate=0.01,
         gradient_clip=0.5,
         batch_size=500,
-        model_dir=TMP_MODEL)
+        model_dir=TMP_MODEL + '_{}'.format(name))
     # 3. vectorize dataset
     dataset = vectorize_dataset(
-        vectorizer=vectorizer, raw=raw,
-        filename=os.path.join(TMP_DATA, '{}_vectorized'.format(language)))
+        vectorizer=vectorizer, raw=corpus,
+        filename=os.path.join(TMP_DATA, '{}_vectorized'.format(name)),
+        ignore_cache=True
+        )
     # 4. run training
-    for i in range(5):
+    for i in range(n_train_steps):
         estimator.fit(dataset.train.x.astype(np.float32),
                       dataset.train.y.astype(np.int32),
                       steps=1000)
@@ -102,6 +112,17 @@ def main():
             dataset.valid.x.astype(np.float32),
             dataset.valid.y.astype(np.int32))
     # 5. evaluate
-    test = estimator.evaluate(
+    metrics = estimator.evaluate(
         dataset.valid.x.astype(np.float32),
         dataset.valid.y.astype(np.int32))
+    metrics['f1'] = 2*((metrics['precision'] * metrics['recall']) /
+                       (metrics['precision'] + metrics['recall']))
+    return estimator, metrics
+
+
+def main(language):
+    if language == 'spanish':
+        raw = nlp516.data.DevelopmentSpanishB()
+    elif language == 'english':
+        raw = nlp516.data.DevelopmentEnglishB()
+    run_experiment(raw, 5, language)

@@ -45,6 +45,7 @@ class BidirectionalCell(object):
         self.forward = tf.nn.rnn_cell.LSTMCell(num_units=num_units)
         self.backward = tf.nn.rnn_cell.LSTMCell(num_units=num_units)
 
+    @property
     def weights(self):
         return self.forward.weights + self.backward.weights
 
@@ -53,6 +54,7 @@ class StackedCell(object):
     def __init__(self, cells):
         self.cells = cells
 
+    @property
     def weights(self):
         weights = list()
         for cell in self.cells:
@@ -295,8 +297,16 @@ class LstmEstimator(object):
         # Compute evaluation metrics.
         accuracy = tf.metrics.accuracy(labels=labels,
                                        predictions=predicted_classes,
-                                       name='acc_op')
-        metrics = {'accuracy': accuracy}
+                                       name='accuracy_op')
+        precision = tf.metrics.precision(labels=labels,
+                                         predictions=predicted_classes,
+                                         name='precision_op')
+        recall = tf.metrics.recall(labels=labels,
+                                   predictions=predicted_classes,
+                                   name='recall_op')
+        metrics = {'accuracy': accuracy,
+                   'precision': precision,
+                   'recall': recall}
         tf.summary.scalar('accuracy', accuracy[1])
 
         if mode == tf.estimator.ModeKeys.EVAL:

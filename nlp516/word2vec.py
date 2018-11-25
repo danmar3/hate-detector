@@ -12,7 +12,7 @@ from gensim.models import Word2Vec
 
 _PROJECT_FOLDER = os.path.dirname(os.path.abspath(__file__))
 if getpass.getuser() == 'marinodl':
-    TMP_FOLDER = '/data/marinodl/tmp/word2vec/vectorizer'
+    TMP_FOLDER = '/data/marinodl/tmp/nlp516/word2vec/vectorizer'
     if not os.path.exists(TMP_FOLDER):
         os.makedirs(TMP_FOLDER)
 else:
@@ -98,7 +98,6 @@ class FakeNews(object):
             self.model.train(
                 sentences=documents, total_examples=len(documents),
                 epochs=epochs)
-            self.save()
 
     def transform(self, data_x, data_y, zero_padding=True):
         def sentence2vectarray(sentence):

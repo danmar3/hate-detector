@@ -4,6 +4,7 @@ Main script for running all tests
 """
 import nlp516
 import nlp516.model
+import nlp516.lstm.word2vec_lstm
 import nltk
 import numpy as np
 import pandas as pd
@@ -14,6 +15,8 @@ import sklearn.naive_bayes
 import sklearn.ensemble
 from types import SimpleNamespace
 from sklearn.feature_extraction.text import CountVectorizer
+
+K_FOLDS = 4
 
 
 def get_dataset(language, run_preprocess=True):
@@ -154,6 +157,36 @@ VECTORIZERS = {
     'frequency': lambda: nlp516.vectorizer.Unigram(100),
     'presence': lambda: nlp516.vectorizer.UnigramPresence(100)
 }
+
+
+def run_stage1_tests(language, task):
+    dataset = get_dataset(language)
+    results = list()
+    for k, data in enumerate(nlp516.data.KFold(dataset, K_FOLDS)):
+        results_i = eval_models(
+            classifiers=CLASSIFIERS, vectorizers=VECTORIZERS,
+            dataset=get_subtask_dataset(data, task))
+        results.append(results)
+    return results
+
+
+def run_lstmword2vec_tests(language, task):
+    if language == 'spanish':
+        dataset = nlp516.data.DevelopmentSpanishB()
+    elif language == 'english':
+        dataset = nlp516.data.DevelopmentEnglishB()
+
+    results = list()
+    for k, data in enumerate(nlp516.data.KFold(dataset, K_FOLDS)):
+        _, result_i = nlp516.lstm.word2vec_lstm.run_experiment(
+            raw=data, target=[task], n_train_steps=5)
+        results.append(result_i)
+    results = pd.DataFrame(
+        {'lstm+word2vec':
+         pd.DataFrame(results).mean()[[
+             'accuracy', 'precision', 'recall', 'f1']]
+         }).transpose()
+    return results
 
 
 def main():
