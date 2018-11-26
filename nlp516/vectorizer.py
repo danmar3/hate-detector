@@ -153,7 +153,7 @@ class CharacterVectorizer(object):
     def transform(self, data):
         def unicode2sparse(record):
             return [(self.vocabulary[k] if k in self.vocabulary
-                     else self.UNKNOWN)
+                     else self.vocabulary[self.UNKNOWN])
                     for k in record]
         output = list()
         for raw in data:

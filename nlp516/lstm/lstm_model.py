@@ -41,9 +41,14 @@ class ZeroPaddedSequence(object):
 
 
 class BidirectionalCell(object):
-    def __init__(self, num_units):
+    def __init__(self, num_units, keep_prob):
         self.forward = tf.nn.rnn_cell.LSTMCell(num_units=num_units)
         self.backward = tf.nn.rnn_cell.LSTMCell(num_units=num_units)
+        if keep_prob is not None:
+            self.forward = tf.nn.rnn_cell.DropoutWrapper(
+                cell=self.forward, input_keep_prob=keep_prob)
+            self.backward = tf.nn.rnn_cell.DropoutWrapper(
+                cell=self.backward, input_keep_prob=keep_prob)
 
     @property
     def weights(self):
@@ -179,7 +184,7 @@ class LstmModel(object):
 class BiLstmModel(LstmModel):
     def _define_cell(self, num_units, keep_prob):
         # assert len(num_units) == 1, 'not implemented'
-        cells = [BidirectionalCell(num_units=units)
+        cells = [BidirectionalCell(num_units=units, keep_prob=keep_prob[i])
                  for i, units in enumerate(num_units)]
         return StackedCell(cells=cells)
 

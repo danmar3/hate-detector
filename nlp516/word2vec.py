@@ -15,10 +15,12 @@ if getpass.getuser() == 'marinodl':
     TMP_FOLDER = '/data/marinodl/tmp/nlp516/word2vec/vectorizer'
     if not os.path.exists(TMP_FOLDER):
         os.makedirs(TMP_FOLDER)
+    MODELS_FOLDER = '/data/marinodl/tmp/nlp516/models'
 else:
     TMP_FOLDER = os.path.join(_PROJECT_FOLDER, 'tmp/word2vec/vectorizer')
     if not os.path.exists(TMP_FOLDER):
         os.makedirs(TMP_FOLDER)
+    MODELS_FOLDER = '/dataset/models/'
 
 
 def gensim_preprocess(dataset):
@@ -45,7 +47,7 @@ class FakeNews(object):
             self._documents = gensim_preprocess(dataset.text)
         return self._documents
 
-    def init(self, size=300, window=10, min_count=2, workers=10,
+    def init(self, size=50, window=10, min_count=2, workers=10,
              epochs=10):
         self.model = Word2Vec(
             size=size, window=window, min_count=min_count,
@@ -123,3 +125,29 @@ class FakeNews(object):
             output_x = np.stack(padded_output, axis=0)
             output_y = np.stack(output_y, axis=0)
         return output_x, output_y
+
+
+class EnglishTweets(FakeNews):
+    src = os.path.join(MODELS_FOLDER, 'wor2vec_filtered_200k.model')
+
+    def __init__(self):
+        self.language = 'english'
+
+    def init(self):
+        self.load()
+
+    def load(self):
+        self.model = gensim.models.KeyedVectors.load(self.src)
+
+    def fit(self, *args, **kargs):
+        pass
+
+    def save(self):
+        raise NotImplementedError('save not implemented for {}'.format(self))
+
+
+class SpanishTweets(EnglishTweets):
+    src = os.path.join(MODELS_FOLDER, 'wor2vec_raw_200k_es.model')
+
+    def __init__(self):
+        self.language = 'spanish'

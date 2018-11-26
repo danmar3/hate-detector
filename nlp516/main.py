@@ -166,26 +166,60 @@ def run_stage1_tests(language, task):
         results_i = eval_models(
             classifiers=CLASSIFIERS, vectorizers=VECTORIZERS,
             dataset=get_subtask_dataset(data, task))
-        results.append(results)
+        results.append(results_i)
+    results = sum(results)/len(results)
     return results
 
 
-def run_lstmword2vec_tests(language, task):
+def run_lstm_character_tests(language, task):
     if language == 'spanish':
         dataset = nlp516.data.DevelopmentSpanishB()
+        n_train_steps = 2
     elif language == 'english':
         dataset = nlp516.data.DevelopmentEnglishB()
+        n_train_steps = 5
 
     results = list()
     for k, data in enumerate(nlp516.data.KFold(dataset, K_FOLDS)):
-        _, result_i = nlp516.lstm.word2vec_lstm.run_experiment(
-            raw=data, target=[task], n_train_steps=5)
+        _, result_i = nlp516.lstm.character_lstm.run_experiment(
+            raw_df=data, target=[task], n_train_steps=n_train_steps)
         results.append(result_i)
+
     results = pd.DataFrame(
-        {'lstm+word2vec':
+        {('lstm', 'character'):
          pd.DataFrame(results).mean()[[
              'accuracy', 'precision', 'recall', 'f1']]
          }).transpose()
+    return results
+
+
+def run_lstm_word2vec_tests(language, task):
+    ''' run kfold tests for lstm+word2vec models '''
+    if language == 'spanish':
+        dataset = nlp516.data.DevelopmentSpanishB()
+        vectorizers = {
+            'word2vec_tweets': nlp516.word2vec.SpanishTweets
+        }
+    elif language == 'english':
+        dataset = nlp516.data.DevelopmentEnglishB()
+        vectorizers = {
+            'word2vec_news': nlp516.word2vec.FakeNews,
+            'word2vec_tweets': nlp516.word2vec.EnglishTweets}
+
+    results = {('lstm', name): list() for name in vectorizers}
+    for k, data in enumerate(nlp516.data.KFold(dataset, K_FOLDS)):
+        # run experiment for each vectorizer
+        for name, Vectorizer in vectorizers.items():
+            vectorizer = Vectorizer()
+            vectorizer.load()
+            _, result_i = nlp516.lstm.word2vec_lstm.run_experiment(
+                raw=data, target=[task], n_train_steps=2,
+                vectorizer=vectorizer)
+            results[('lstm', name)].append(result_i)
+    results = pd.DataFrame(
+        {name: pd.DataFrame(kfolds).mean()[['accuracy', 'precision',
+                                            'recall', 'f1']]
+         for name, kfolds in results.items()}).transpose()
     return results
 
 

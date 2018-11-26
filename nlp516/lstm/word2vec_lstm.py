@@ -31,10 +31,12 @@ else:
         os.makedirs(TMP_FOLDER)
 
 
-def run_experiment(raw, name='test', target=['HS'], n_train_steps=10):
+def run_experiment(raw, name='test', target=['HS'], n_train_steps=10,
+                   vectorizer=None):
     # vectorize
-    vectorizer = nlp516.word2vec.FakeNews()
-    vectorizer.load()
+    if vectorizer is None:
+        vectorizer = nlp516.word2vec.FakeNews()
+        vectorizer.load()
     train_x, train_y = vectorizer.transform(raw.train.text,
                                             raw.train[target].values)
     valid_x, valid_y = vectorizer.transform(raw.valid.text,
@@ -46,12 +48,12 @@ def run_experiment(raw, name='test', target=['HS'], n_train_steps=10):
         print('removing existing model directory {}'.format(model_dir))
         shutil.rmtree(model_dir)
 
-    estimator = nlp516.lstm.lstm_model.BiLstmEstimator(
+    estimator = nlp516.lstm.lstm_model.AggregatedBiLstmEstimator(
         num_inputs=train_x.shape[-1],
-        num_units=[10, 10],
+        num_units=[50, 25],
         keep_prob=SimpleNamespace(rnn=[None, 0.9],
-                                  classifier=0.8),
-        regularizer=0.0001,
+                                  classifier=0.9),
+        regularizer=0.001,
         learning_rate=0.01,
         gradient_clip=0.5,
         batch_size=500,

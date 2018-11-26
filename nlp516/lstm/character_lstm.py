@@ -6,6 +6,7 @@ import os
 import nlp516
 import pickle
 import getpass
+import shutil
 import nlp516
 import nlp516.model
 import numpy as np
@@ -54,16 +55,16 @@ def preprocess(raw):
     return raw
 
 
-def vectorize_dataset(vectorizer, raw, filename=None,
+def vectorize_dataset(vectorizer, raw, target, filename=None,
                       ignore_cache=False):
     if filename is None:
         filename = os.path.join(TMP_DATA, 'preprocessed')
     if not os.path.exists(filename) or ignore_cache:
         train_x = vectorizer.transform(raw.train.text)
-        train_y = np.expand_dims(raw.train.HS.values, 1)
+        train_y = raw.train[target].values
 
         valid_x = vectorizer.transform(raw.valid.text)
-        valid_y = np.expand_dims(raw.valid.HS.values, 1)
+        valid_y = raw.valid[target].values
 
         lstm_dataset = SimpleNamespace(
             train=SimpleNamespace(x=train_x, y=train_y),
@@ -77,7 +78,7 @@ def vectorize_dataset(vectorizer, raw, filename=None,
         return pickle.load(file)
 
 
-def run_experiment(raw_df, name, n_train_steps=10):
+def run_experiment(raw_df, name='test', target=['HS'], n_train_steps=10):
     corpus = preprocess(raw_df)
     # 1. Vectorizer
     character_vect = nlp516.vectorizer.CharacterVectorizer()
@@ -87,7 +88,17 @@ def run_experiment(raw_df, name, n_train_steps=10):
                      nlp516.vectorizer.OneHotSequenceEncoder(
                          n_classes=len(character_vect.vocabulary),
                          time_major=False)])
-    # 2. estimator
+    # 2. vectorize dataset
+    dataset = vectorize_dataset(
+        vectorizer=vectorizer, raw=corpus, target=target,
+        filename=os.path.join(TMP_DATA, '{}_vectorized'.format(name)),
+        ignore_cache=True
+        )
+    # 3. estimator
+    model_dir = TMP_MODEL + '_{}'.format(name)
+    if os.path.exists(model_dir):
+        print('removing existing model directory {}'.format(model_dir))
+        shutil.rmtree(model_dir)
     estimator = nlp516.lstm.lstm_model.AggregatedBiLstmEstimator(
         num_inputs=len(character_vect.vocabulary),
         num_units=[50],
@@ -95,19 +106,13 @@ def run_experiment(raw_df, name, n_train_steps=10):
         regularizer=None,
         learning_rate=0.01,
         gradient_clip=0.5,
-        batch_size=500,
-        model_dir=TMP_MODEL + '_{}'.format(name))
-    # 3. vectorize dataset
-    dataset = vectorize_dataset(
-        vectorizer=vectorizer, raw=corpus,
-        filename=os.path.join(TMP_DATA, '{}_vectorized'.format(name)),
-        ignore_cache=True
-        )
+        batch_size=250,
+        model_dir=model_dir)
     # 4. run training
     for i in range(n_train_steps):
         estimator.fit(dataset.train.x.astype(np.float32),
                       dataset.train.y.astype(np.int32),
-                      steps=1000)
+                      steps=500)
         estimator.evaluate(
             dataset.valid.x.astype(np.float32),
             dataset.valid.y.astype(np.int32))
