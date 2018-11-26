@@ -47,7 +47,7 @@ class FakeNews(object):
             self._documents = gensim_preprocess(dataset.text)
         return self._documents
 
-    def init(self, size=50, window=10, min_count=2, workers=10,
+    def init(self, size=200, window=10, min_count=2, workers=10,
              epochs=10):
         self.model = Word2Vec(
             size=size, window=window, min_count=min_count,

@@ -177,7 +177,7 @@ def run_lstm_character_tests(language, task):
         n_train_steps = 2
     elif language == 'english':
         dataset = nlp516.data.DevelopmentEnglishB()
-        n_train_steps = 5
+        n_train_steps = 2
 
     results = list()
     for k, data in enumerate(nlp516.data.KFold(dataset, K_FOLDS)):
@@ -188,7 +188,7 @@ def run_lstm_character_tests(language, task):
     results = pd.DataFrame(
         {('lstm', 'character'):
          pd.DataFrame(results).mean()[[
-             'accuracy', 'precision', 'recall', 'f1']]
+             'accuracy', 'f1', 'precision', 'recall']]
          }).transpose()
     return results
 
@@ -197,11 +197,16 @@ def run_lstm_word2vec_tests(language, task):
     ''' run kfold tests for lstm+word2vec models '''
     if language == 'spanish':
         dataset = nlp516.data.DevelopmentSpanishB()
+        if task == 'AG':
+            n_train_steps = 1
+        else:
+            n_train_steps = 2
         vectorizers = {
             'word2vec_tweets': nlp516.word2vec.SpanishTweets
         }
     elif language == 'english':
         dataset = nlp516.data.DevelopmentEnglishB()
+        n_train_steps = 1
         vectorizers = {
             'word2vec_news': nlp516.word2vec.FakeNews,
             'word2vec_tweets': nlp516.word2vec.EnglishTweets}
@@ -213,12 +218,12 @@ def run_lstm_word2vec_tests(language, task):
             vectorizer = Vectorizer()
             vectorizer.load()
             _, result_i = nlp516.lstm.word2vec_lstm.run_experiment(
-                raw=data, target=[task], n_train_steps=2,
+                raw=data, target=[task], n_train_steps=n_train_steps,
                 vectorizer=vectorizer)
             results[('lstm', name)].append(result_i)
     results = pd.DataFrame(
-        {name: pd.DataFrame(kfolds).mean()[['accuracy', 'precision',
-                                            'recall', 'f1']]
+        {name: pd.DataFrame(kfolds).mean()[['accuracy', 'f1', 'precision',
+                                            'recall']]
          for name, kfolds in results.items()}).transpose()
     return results
 
