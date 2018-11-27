@@ -38,16 +38,14 @@ def get_training_docs():
 
 def train_fasttext(corpus):
     model = gensim.models.FastText(corpus, size=300, window=10, min_count=2, workers=4, iter=10)
-    return model.wv
+    return model
 
 def train_word2vec(corpus):
     model = gensim.models.Word2Vec(corpus, size=300, window=10, min_count=2, workers=4)
     model.train(corpus, total_examples=len(corpus), epochs=10)
-    return model.wv
+    return model
 
 def train_model(model_path, corp_path, n, train_func):
-    if input(f"Retrain model {model_path}? (yes/no) ") != "yes":
-        exit()
     start = datetime.datetime.now()
     # training_docs, labels = get_training_docs()
 
@@ -56,9 +54,10 @@ def train_model(model_path, corp_path, n, train_func):
 
     model = train_func(corpus)
     model.save(model_path)
+    print("Saved: ", model_path)
 
     print("runtime", (datetime.datetime.now()-start).total_seconds())
-    print(model, model.most_similar("woman"))
+    #print(model, model.most_similar("woman"))
 
 def load_model(path):
     #model = gensim.models.Word2Vec.load("word2vec.model")
@@ -67,16 +66,17 @@ def load_model(path):
 
 def vectorize(word, model):
     try:
-        return model.word_vec(word)
+        return model.wv.word_vec(word)
     except KeyError:
         return [0.0] * model.vector_size
 
 
 if __name__ == "__main__":
-    #train_model("models/test.model", "corpus.txt", 10000, train_fasttext)
-    # train_model("models/wor2vec_filtered_200k.model", "filtered_corpus_mixed.txt", 200000, train_word2vec)
-    # train_model("models/wor2vec_raw_200k.model", "corpus.txt", 200000, train_word2vec)
-    # train_model("models/fasttext_filtered_200k.model", "filtered_corpus_mixed.txt", 200000, train_fasttext)
-    # train_model("models/fasttext_raw_200k.model", "corpus.txt", 200000, train_fasttext)
+    if input(f"Retrain models? (yes/no) ") != "yes":
+        exit()
+    train_model("models/wor2vec_filtered_200k.model", "filtered_corpus_mixed.txt", 200000, train_word2vec)
+    train_model("models/wor2vec_raw_200k.model", "corpus.txt", 200000, train_word2vec)
+    train_model("models/fasttext_filtered_200k.model", "filtered_corpus_mixed.txt", 200000, train_fasttext)
+    train_model("models/fasttext_raw_200k.model", "corpus.txt", 200000, train_fasttext)
     train_model("models/fasttext_raw_200k_es.model", "corpus_es.txt", 200000, train_fasttext)
-    #train_model("models/wor2vec_raw_200k_es.model", "corpus_es.txt", 200000, train_word2vec)
+    train_model("models/wor2vec_raw_200k_es.model", "corpus_es.txt", 200000, train_word2vec)
