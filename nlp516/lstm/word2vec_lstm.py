@@ -38,9 +38,9 @@ def run_experiment(raw, name='test', target=['HS'], n_train_steps=10,
         vectorizer = nlp516.word2vec.FakeNews()
         vectorizer.load()
     train_x, train_y = vectorizer.transform(raw.train.text,
-                                            raw.train[target].values)
+                                            raw.train[target])
     valid_x, valid_y = vectorizer.transform(raw.valid.text,
-                                            raw.valid[target].values)
+                                            raw.valid[target])
 
     # estimator
     model_dir = os.path.join(TMP_FOLDER, name)
@@ -61,16 +61,16 @@ def run_experiment(raw, name='test', target=['HS'], n_train_steps=10,
     )
     # Training
     for i in range(n_train_steps):
-        estimator.fit(train_x.astype(np.float32),
-                      train_y.astype(np.int32),
+        estimator.fit(train_x.values.astype(np.float32),
+                      train_y.values.astype(np.int32),
                       steps=150)
         estimator.evaluate(
-            valid_x.astype(np.float32),
-            valid_y.astype(np.int32))
+            valid_x.values.astype(np.float32),
+            valid_y.values.astype(np.int32))
     # Evaluate
     metrics = estimator.evaluate(
-        valid_x.astype(np.float32),
-        valid_y.astype(np.int32))
+        valid_x.values.astype(np.float32),
+        valid_y.values.astype(np.int32))
     metrics['f1'] = 2*((metrics['precision'] * metrics['recall']) /
                        (metrics['precision'] + metrics['recall']))
     return estimator, metrics
@@ -78,7 +78,8 @@ def run_experiment(raw, name='test', target=['HS'], n_train_steps=10,
 
 class LstmHateDetector(object):
     def __init__(self, name):
-        self.vectorizer = nlp516.word2vec.FakeNews()
+        # self.vectorizer = nlp516.word2vec.FakeNews()
+        self.vectorizer = nlp516.word2vec.EnglishTweets()
         self.vectorizer.load()
         self.model_dir = os.path.join(TMP_FOLDER, name)
 
@@ -90,62 +91,88 @@ class LstmHateDetector(object):
 
         self.estimator = nlp516.lstm.lstm_model.AggregatedBiLstmEstimator(
             num_inputs=num_inputs,
-            num_units=[10, 10],
+            num_units=[50, 25],
             keep_prob=SimpleNamespace(rnn=[None, 0.9],
                                       classifier=0.9),
-            regularizer=None,
+            regularizer=0.001,
             learning_rate=0.01,
             gradient_clip=0.5,
             batch_size=500,
             model_dir=self.model_dir
                   )
 
-    def fit(self, train, valid, target=['HS']):
-        self.vectorizer.fit(train.text, epochs=10)
+    def fit(self, train, valid, target=['HS'], n_train_iter=2, steps=150):
+        # self.vectorizer.fit(train.text, epochs=10)
         train_x, train_y = self.vectorizer.transform(train.text,
-                                                     train[target].values)
+                                                     train[target])
         valid_x, valid_y = self.vectorizer.transform(valid.text,
-                                                     valid[target].values)
+                                                     valid[target])
         if not hasattr(self, 'estimator'):
             self._define_estimator(num_inputs=train_x.shape[-1])
 
-        for i in range(2):
-            self.estimator.fit(train_x.astype(np.float32),
-                               train_y.astype(np.int32),
-                               steps=150)
+        for i in range(n_train_iter):
+            self.estimator.fit(train_x.values.astype(np.float32),
+                               train_y.values.astype(np.int32),
+                               steps=steps)
             self.estimator.evaluate(
-                valid_x.astype(np.float32),
-                valid_y.astype(np.int32))
+                valid_x.values.astype(np.float32),
+                valid_y.values.astype(np.int32))
 
     def evaluate(self, valid, target=['HS']):
         valid_x, valid_y = self.vectorizer.transform(valid.text,
-                                                     valid[target].values)
+                                                     valid[target])
         result = self.estimator.evaluate(
-                valid_x.astype(np.float32),
-                valid_y.astype(np.int32))
+                valid_x.values.astype(np.float32),
+                valid_y.values.astype(np.int32))
         return result
 
-    def predict(self, sentence):
-        test_sentence, _ = self.vectorizer.transform(pd.Series([sentence]),
-                                                     [[None]])
+    def predict(self, test_data):
+        if isinstance(test_data, str):
+            test_data = pd.Series([test_data])
+        embedded, _ = self.vectorizer.transform(test_data)
         test_y = [y for y in self.estimator.predict(
-            test_sentence.astype(np.float32))]
-        return test_y[0]
+            embedded.astype(np.float32))]
+        return pd.DataFrame(test_y, index=embedded.indexes['batch'].values)\
+                 .applymap(lambda x: x[0])
 
 
 class Ensamble(object):
     def __init__(self, models):
         self.models = models
 
-    def predict(self, sentence):
-        pred = [model.predict(sentence) for model in self.models]
-        pred = pd.DataFrame(pd.DataFrame([r for r in pred])).mean()
-        return pred
+    def predict(self, test_x):
+        pred = [model.predict(test_x) for model in self.models]
+        aggregated = sum(pred)/len(pred)
+        aggregated['labels'] = \
+            (aggregated[['probabilities']] > 0.5).astype(np.int32)
+        return aggregated
+
+    def accuracy_score(self, x, y):
+        ''' accuracy of the model on predicting the labels for x'''
+        pred = self.predict(x)
+        return sklearn.metrics.accuracy_score(
+            y_true=y[pred.index].values, y_pred=pred['labels'])
+
+    def precision_score(self, x, y):
+        pred = self.predict(x)
+        return sklearn.metrics.precision_score(
+            y_true=y[pred.index].values, y_pred=pred['labels'])
+
+    def recall_score(self, x, y):
+        pred = self.predict(x)
+        return sklearn.metrics.recall_score(
+            y_true=y[pred.index].values, y_pred=pred['labels'])
+
+    def f1_score(self, x, y):
+        pred = self.predict(x)
+        return sklearn.metrics.f1_score(
+            y_true=y[pred.index].values, y_pred=pred['labels'])
 
 
 class EnsambleHateDetector(Ensamble):
     def __init__(self, k):
-        self.models = [LstmHateDetector() for i in range(k)]
+        self.models = [LstmHateDetector(name='fold_'.format(i))
+                       for i in range(k)]
 
     def fit(self, train, valid):
         shuffled = train.sample(frac=1)
@@ -153,7 +180,13 @@ class EnsambleHateDetector(Ensamble):
         for data, model in zip(folds, self.models):
             model.fit(train=data, valid=valid)
 
-    def evaluate(self, valid):
-        result = [model.evaluate(valid=valid)
-                  for model in self.models]
-        return result
+
+class EnsambleHateDetector2(Ensamble):
+    def __init__(self, k):
+        self.models = [LstmHateDetector(name='fold_'.format(i))
+                       for i in range(k)]
+
+    def fit(self, train, valid):
+        for k, data in enumerate(nlp516.data.KFold(train, len(self.models))):
+            self.models[k].fit(train=data.train, valid=valid,
+                               n_train_iter=10)

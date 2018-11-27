@@ -18,7 +18,7 @@ from setuptools.command.install import install
 DEPS = ['nltk==3.3', 'pandas==0.23.4', 'pathlib', 'tqdm',
         'scikit-learn==0.20.0', 'scipy==1.1.0',
         'matplotlib==3.0.0', 'gensim==3.6.0',
-        'tensorflow==1.12.0',
+        'tensorflow==1.12.0', 'xarray'
         'emoji==0.5.1']
 
 

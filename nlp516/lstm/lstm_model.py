@@ -213,7 +213,7 @@ class BiLstmModel(LstmModel):
         return state_initial, state_final, outputs
 
 
-class AggreagtedLstm(LstmModel):
+class AggregatedLstm(LstmModel):
     def _define_classifier(self, num_outputs, keep_prob=None):
         time_axis = (0 if self.time_major else 1)
         inputs = self.rnn.outputs
@@ -266,7 +266,7 @@ class AggreagtedLstm(LstmModel):
         return loss
 
 
-class AggreagtedBiLstm(AggreagtedLstm, BiLstmModel):
+class AggregatedBiLstm(AggregatedLstm, BiLstmModel):
     pass
 
 
@@ -435,8 +435,8 @@ class BiLstmEstimator(LstmEstimator):
 
 
 class AggregatedLstmEstimator(LstmEstimator):
-    MlModel = AggreagtedLstm
+    MlModel = AggregatedLstm
 
 
 class AggregatedBiLstmEstimator(LstmEstimator):
-    MlModel = AggreagtedBiLstm
+    MlModel = AggregatedBiLstm

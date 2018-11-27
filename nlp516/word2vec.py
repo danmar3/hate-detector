@@ -7,6 +7,8 @@ import os
 import getpass
 import gensim
 import numpy as np
+import pandas as pd
+import xarray as xr
 from . import data as datalib
 from gensim.models import Word2Vec
 
@@ -101,20 +103,29 @@ class FakeNews(object):
                 sentences=documents, total_examples=len(documents),
                 epochs=epochs)
 
-    def transform(self, data_x, data_y, zero_padding=True):
+    def transform(self, data_x, data_y=None, zero_padding=True):
+        assert isinstance(data_x, (pd.Series)), \
+            'invalid data_x type {}'.format(type(data_x))
+        if data_y is not None:
+            assert isinstance(data_y, (pd.Series, pd.DataFrame))
+
         def sentence2vectarray(sentence):
             return [self.model.wv[word] for word in sentence
                     if word in self.model.wv]
 
         output_x = list()
-        output_y = list()
+        output_y = (list() if data_y is not None
+                    else None)
         corpus = self.preprocess(data_x)
+        batch_index = list()
         # apply word2vec
-        for sentence, label in zip(corpus, data_y):
+        for idx, sentence in enumerate(corpus):
             vect_array = sentence2vectarray(sentence)
             if vect_array:
                 output_x.append(np.stack(vect_array))
-                output_y.append(label)
+                batch_index.append(corpus.index[idx])
+                if data_y is not None:
+                    output_y.append(data_y.iloc[idx, :])
         if zero_padding:
             max_len = max(len(sentence) for sentence in output_x)
             padded_output = list()
@@ -123,12 +134,19 @@ class FakeNews(object):
                                   sentence.shape[1]])
                 padded_output.append(np.concatenate([sentence, zeros], axis=0))
             output_x = np.stack(padded_output, axis=0)
-            output_y = np.stack(output_y, axis=0)
+            output_x = xr.DataArray(
+                output_x,
+                coords=[batch_index,
+                        pd.RangeIndex(0, output_x.shape[1]),
+                        pd.RangeIndex(0, output_x.shape[2])],
+                dims=['batch', 'time', 'embedding'])
+            if data_y is not None:
+                output_y = pd.DataFrame(output_y, index=batch_index)
         return output_x, output_y
 
 
 class EnglishTweets(FakeNews):
-    src = os.path.join(MODELS_FOLDER, 'wor2vec_filtered_200k.model')
+    src = os.path.join(MODELS_FOLDER, 'wor2vec_raw_200k.model')
 
     def __init__(self):
         self.language = 'english'
@@ -144,6 +162,10 @@ class EnglishTweets(FakeNews):
 
     def save(self):
         raise NotImplementedError('save not implemented for {}'.format(self))
+
+
+class EnglishTweetsFiltered(EnglishTweets):
+    src = os.path.join(MODELS_FOLDER, 'wor2vec_filtered_200k.model')
 
 
 class SpanishTweets(EnglishTweets):

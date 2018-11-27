@@ -15,8 +15,11 @@ class KFold(object):
             k (int): number of splits.
         """
         self.k = k
-        dataset = pd.concat([dataset.train, dataset.valid])\
-                    .reset_index(drop=True)
+        if isinstance(dataset, pd.DataFrame):
+            pass
+        elif (hasattr(dataset, 'train') and hasattr(dataset, 'valid')):
+            dataset = pd.concat([dataset.train, dataset.valid])\
+                        .reset_index(drop=True)
         shuffled = dataset.sample(frac=1)
         self.folds = np.array_split(shuffled, k)
 

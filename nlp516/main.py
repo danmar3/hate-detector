@@ -209,7 +209,9 @@ def run_lstm_word2vec_tests(language, task):
         n_train_steps = 1
         vectorizers = {
             'word2vec_news': nlp516.word2vec.FakeNews,
-            'word2vec_tweets': nlp516.word2vec.EnglishTweets}
+            'word2vec_tweets': nlp516.word2vec.EnglishTweets,
+            'word2vec_tweets(filtered)': nlp516.word2vec.EnglishTweetsFiltered
+            }
 
     results = {('lstm', name): list() for name in vectorizers}
     for k, data in enumerate(nlp516.data.KFold(dataset, K_FOLDS)):
