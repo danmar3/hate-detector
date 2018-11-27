@@ -123,6 +123,6 @@ def train_cls(corpus_path, train_data_path, num_tweets):
 
 
 if __name__ == "__main__":
-    main('corpus.txt', '../nlp516/dataset/development/train_en.tsv', 9500000)
-    #main('corpus_es.txt', '../nlp516/dataset/development/train_es.tsv', 3000)
+    #main('corpus.txt', '../nlp516/dataset/development/train_en.tsv', 9500000)
+    main('corpus_es.txt', '../nlp516/dataset/development/train_es.tsv', 3500000)
     #get_mixed_data()

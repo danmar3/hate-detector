@@ -46,8 +46,6 @@ def train_word2vec(corpus):
     return model.wv
 
 def train_model(model_path, corp_path, n, train_func):
-    if input(f"Retrain model {model_path}? (yes/no) ") != "yes":
-        exit()
     start = datetime.datetime.now()
     # training_docs, labels = get_training_docs()
 
@@ -72,8 +70,11 @@ def vectorize(word, model):
         return [0.0] * model.vector_size
 
 if __name__ == "__main__":
-    #train_model("models/test.model", "corpus.txt", 10000, train_fasttext)
+    if input(f"Retrain models? (yes/no) ") != "yes":
+        exit()
     train_model("models/wor2vec_filtered_200k.model", "filtered_corpus_mixed.txt", 200000, train_word2vec)
     train_model("models/wor2vec_raw_200k.model", "corpus.txt", 200000, train_word2vec)
     train_model("models/fasttext_filtered_200k.model", "filtered_corpus_mixed.txt", 200000, train_fasttext)
     train_model("models/fasttext_raw_200k.model", "corpus.txt", 200000, train_fasttext)
+    train_model("models/fasttext_raw_200k_es.model", "corpus_es.txt", 200000, train_fasttext)
+    train_model("models/wor2vec_raw_200k_es.model", "corpus_es.txt", 200000, train_word2vec)

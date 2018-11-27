@@ -84,8 +84,12 @@ import embeddings
 
 def test():
     model = embeddings.load_model("models/wor2vec_filtered_200k.model")
-    print(embeddings.vectorize("immigrant", model))
+    model = embeddings.load_model("models/wor2vec_raw_200k.model")
+    #model = embeddings.load_model("models/fasttext_filtered_200k.model")
+
+    #print(embeddings.vectorize("#immigrant", model))
     print(model.most_similar("immigrant"))
+    print(model.most_similar("woman"))
     print(model)
 
     
