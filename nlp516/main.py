@@ -210,7 +210,10 @@ def run_lstm_word2vec_tests(language, task):
         vectorizers = {
             'word2vec_news': nlp516.word2vec.FakeNews,
             'word2vec_tweets': nlp516.word2vec.EnglishTweets,
-            'word2vec_tweets(filtered)': nlp516.word2vec.EnglishTweetsFiltered
+            'word2vec_tweets(filtered)': nlp516.word2vec.EnglishTweetsFiltered,
+            'fasttext_tweets': nlp516.word2vec.EnglishTweetsFastText,
+            'fasttext_tweets(filtered)':
+            nlp516.word2vec.EnglishTweetsFilteredFastText
             }
 
     results = {('lstm', name): list() for name in vectorizers}
