@@ -1,11 +1,11 @@
 # Dataset
 *.zip
+*.bz2
 *.tsv
 *.csv
 nlp516/dataset/*
 *results*.txt
 *corpus*.txt
-
 
 # Models
 *.pkl
