@@ -1,7 +1,13 @@
+"""
+Filters raw twitter data into a language-specific corpus
+@author: Paul Hudgins (hudginspj@vcu.edu)
+"""
 import os
 import bz2
 import json
 import datetime
+
+CORPUS_FOLDER = 'dataset/corpuses/'
 
 en_words = ['is','the','to','of','and','why','hate','be','that','have','it','for','not','on','at','with']
 es_words = '''
@@ -37,11 +43,11 @@ def file_tweets(filepath, language):
     return tweets
 
 
-def walk_tweets(directory, outfile, language, limit):
+def walk_tweets(outfile, language, limit):
     count = 0
-    with open(outfile, 'w') as out_f:
+    with open(CORPUS_FOLDER + outfile, 'w') as out_f:
     
-        for root, dirs, files in os.walk(directory, topdown=False):
+        for root, dirs, files in os.walk(CORPUS_FOLDER, topdown=False):
             for name in files:
                 if name.endswith(".bz2"):
                     path = os.path.join(root, name)
@@ -60,8 +66,8 @@ def walk_tweets(directory, outfile, language, limit):
 if __name__ == "__main__":
     start_time = datetime.datetime.now()
 
-    walk_tweets("corpuses/2017", "corpuses/corpus_en.txt", "EN", 1000)
+    walk_tweets("corpus_en.txt", "EN", 10000000)
     print("runtime", datetime.datetime.now() - start_time)
 
-    walk_tweets("corpuses/2017", "corpuses/corpus_es.txt", "ES", 1000)
+    walk_tweets("corpus_es.txt", "ES", 10000000)
     print("runtime", datetime.datetime.now() - start_time)

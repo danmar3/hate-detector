@@ -1,10 +1,10 @@
-print("starting")
+"""
+Filters random language-specific tweets into a dataset-resembling corpus.
+@author: Paul Hudgins (hudginspj@vcu.edu)
+"""
 import gensim
-#import nlp516.data as data
 import os
 import zipfile
-#import nlp516
-print()
 import pandas
 import numpy
 import random
@@ -18,16 +18,17 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 
-#divider = 8000000
+CORPUS_FOLDER = 'dataset/corpuses/'
+DATASET_FOLDER = 'dataset/development/'
 
-def main(corpus_path, train_data_path, num_tweets):
+def main(corpus_path, train_data_path, outfile, num_tweets):
     print("hello")
     pass
-    classifier, vector = train_cls(corpus_path, train_data_path, num_tweets)
+    classifier, vector = train_cls(CORPUS_FOLDER + corpus_path, DATASET_FOLDER + train_data_path, num_tweets)
     print("done training classifier")
 
-    with open(corpus_path) as inf:
-        with open("filtered_corpus.txt", 'w') as outf:
+    with open(CORPUS_FOLDER + corpus_path) as inf:
+        with open(CORPUS_FOLDER + outfile, 'w') as outf:
             count = 0
             positives = []
             negatives = []
@@ -106,13 +107,7 @@ def train_cls(corpus_path, train_data_path, num_tweets):
     classifier = LogisticRegression()
     classifier.fit(X, labels)
     return classifier, vectorizer
-    
-
-  
-
-
 
 if __name__ == "__main__":
-    #main('corpus.txt', '../nlp516/dataset/development/train_en.tsv', 9500000)
-    main('corpus_es.txt', '../nlp516/dataset/development/train_es.tsv', 3500000)
-    #get_mixed_data()
+    main('corpus_en.txt', 'train_en.tsv', 'filtered_corpus_en.txt', 9500000)
+    main('corpus_es.txt', 'train_es.tsv', 'filtered_corpus_es.txt', 3500000)
