@@ -6,6 +6,7 @@ import nlp516
 import nlp516.model
 import nlp516.lstm.word2vec_lstm
 import nltk
+import argparse
 import numpy as np
 import pandas as pd
 import itertools
@@ -17,6 +18,7 @@ from types import SimpleNamespace
 from sklearn.feature_extraction.text import CountVectorizer
 
 K_FOLDS = 4
+FLAGS = None
 
 
 def get_dataset(language, run_preprocess=True):
@@ -135,8 +137,13 @@ def eval_doc2vec(classifiers, dataset):
 
 def print_results(string, file):
     ''' print results into stdout and results file '''
-    print(string)
-    print(string, file=file)
+    if isinstance(string, pd.DataFrame) and FLAGS.to_latex:
+        print(string)
+        print(string.to_latex(float_format=lambda x: '%.3f' % x),
+              file=file)
+    else:
+        print(string)
+        print(string, file=file)
 
 
 CLASSIFIERS = {
@@ -200,9 +207,10 @@ def run_lstm_word2vec_tests(language, task):
         if task == 'AG':
             n_train_steps = 1
         else:
-            n_train_steps = 2
+            n_train_steps = 1
         vectorizers = {
-            'word2vec_tweets': nlp516.word2vec.SpanishTweets
+            'word2vec_tweets': nlp516.word2vec.SpanishTweets,
+            'fasttext_tweets': nlp516.word2vec.SpanishTweetsFastText
         }
     elif language == 'english':
         dataset = nlp516.data.DevelopmentEnglishB()
@@ -210,7 +218,10 @@ def run_lstm_word2vec_tests(language, task):
         vectorizers = {
             'word2vec_news': nlp516.word2vec.FakeNews,
             'word2vec_tweets': nlp516.word2vec.EnglishTweets,
-            'word2vec_tweets(filtered)': nlp516.word2vec.EnglishTweetsFiltered
+            'word2vec_tweets(filtered)': nlp516.word2vec.EnglishTweetsFiltered,
+            'fasttext_tweets': nlp516.word2vec.EnglishTweetsFastText,
+            'fasttext_tweets(filtered)':
+            nlp516.word2vec.EnglishTweetsFilteredFastText
             }
 
     results = {('lstm', name): list() for name in vectorizers}
@@ -232,32 +243,34 @@ def run_lstm_word2vec_tests(language, task):
 
 def main():
     ''' run all tests '''
-    result_file = open("results.txt", "w")
-    languages = ['spanish', 'english']
+    languages = ['english', 'spanish']
     tasks = ['HS', 'TR', 'AG']
-    # ---------------- unigram tests -----------------
+    # ---------------- all tests -----------------
     for language in languages:
         dataset = get_dataset(language)
         for task in tasks:
-            print_results('-'*30 + '{} {}'.format(language, task) + '-'*30,
-                          file=result_file)
-
-            results = eval_models(
-                classifiers=CLASSIFIERS, vectorizers=VECTORIZERS,
-                dataset=get_subtask_dataset(dataset, task))
-            print_results(results, file=result_file)
-
-    # ---------------- doc2vec tests -----------------
-    dataset = get_dataset('english', run_preprocess=False)
-    for task in tasks:
-        print_results('-'*30 + '{} {}'.format('english', task) + '-'*30,
-                      file=result_file)
-        results = eval_doc2vec(
-            classifiers=CLASSIFIERS,
-            dataset=get_subtask_dataset(dataset, task)
-        )
-        print_results(results, file=result_file)
+            with open("results_{}_{}.txt".format(language, task),
+                      "w") as result_file:
+                print_results('-'*30 + '{} {}'.format(language, task) + '-'*30,
+                              file=result_file)
+                results1 = run_stage1_tests(language=language,
+                                            task=task)
+                results2 = run_lstm_word2vec_tests(language=language,
+                                                   task=task)
+                if FLAGS.full:
+                    results3 = run_lstm_character_tests(language=language,
+                                                        task=task)
+                    results = pd.concat([results1, results2, results3])
+                else:
+                    results = pd.concat([results1, results2])
+                print_results(results, file=result_file)
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--to_latex', action='store_true')
+    parser.add_argument('--full', action='store_true')
+    FLAGS, unparsed = parser.parse_known_args()
+    if FLAGS.to_latex:
+        print('printing to latex')
     main()

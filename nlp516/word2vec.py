@@ -46,7 +46,8 @@ class FakeNews(object):
         if not hasattr(self, '_documents'):
             dataset = datalib.external.load_fakenews()
             dataset = dataset[dataset.language == self.language]
-            self._documents = gensim_preprocess(dataset.text)
+            # self._documents = gensim_preprocess(dataset.text)
+            self._documents = self.preprocess(dataset.text)
         return self._documents
 
     def init(self, size=200, window=10, min_count=2, workers=10,
@@ -76,13 +77,13 @@ class FakeNews(object):
             self._tokenizer = datalib.Tokenizer(self.language)
         dataset = series.apply(datalib.remove_urls_map)
         dataset = dataset.apply(datalib.remove_numbers)
-        dataset = dataset.apply(datalib.replace_punctuation)  #
+        #dataset = dataset.apply(datalib.replace_punctuation)  #
         dataset = dataset.apply(self._tokenizer)
         dataset = dataset.apply(datalib.user_camelcase_map)
         dataset = dataset.apply(datalib.hashtag_camelcase_map)
         dataset = dataset.apply(datalib.to_lowercase)
         # dataset = dataset.apply(datalib.remove_words_with_numbers)
-        dataset = dataset.apply(datalib.remove_punctuation)
+        #dataset = dataset.apply(datalib.remove_punctuation)
         return dataset
 
     def fit(self, sentences, epochs=5, concatenate=False):
@@ -103,6 +104,14 @@ class FakeNews(object):
                 sentences=documents, total_examples=len(documents),
                 epochs=epochs)
 
+    def get_word_embedding(self, word):
+        # try:
+        #     return self.model.wv.word_vec(word)
+        # except KeyError:
+        #     return None
+        return (self.model.wv[word] if word in self.model.wv
+                else None)
+
     def transform(self, data_x, data_y=None, zero_padding=True):
         assert isinstance(data_x, (pd.Series)), \
             'invalid data_x type {}'.format(type(data_x))
@@ -110,8 +119,8 @@ class FakeNews(object):
             assert isinstance(data_y, (pd.Series, pd.DataFrame))
 
         def sentence2vectarray(sentence):
-            return [self.model.wv[word] for word in sentence
-                    if word in self.model.wv]
+            return [self.get_word_embedding(word) for word in sentence
+                    if self.get_word_embedding(word) is not None]
 
         output_x = list()
         output_y = (list() if data_y is not None
@@ -151,11 +160,18 @@ class EnglishTweets(FakeNews):
     def __init__(self):
         self.language = 'english'
 
+    def get_word_embedding(self, word):
+        try:
+            return self.model.word_vec(word)
+        except KeyError:
+            return None
+
     def init(self):
         self.load()
 
     def load(self):
         self.model = gensim.models.KeyedVectors.load(self.src)
+        # self.model = Word2Vec.load(self.src)
 
     def fit(self, *args, **kargs):
         pass
@@ -168,8 +184,20 @@ class EnglishTweetsFiltered(EnglishTweets):
     src = os.path.join(MODELS_FOLDER, 'wor2vec_filtered_200k.model')
 
 
+class EnglishTweetsFastText(EnglishTweets):
+    src = os.path.join(MODELS_FOLDER, 'fasttext_filtered_200k.model')
+
+
+class EnglishTweetsFilteredFastText(EnglishTweets):
+    src = os.path.join(MODELS_FOLDER, 'fasttext_filtered_200k.model')
+
+
 class SpanishTweets(EnglishTweets):
     src = os.path.join(MODELS_FOLDER, 'wor2vec_raw_200k_es.model')
 
     def __init__(self):
         self.language = 'spanish'
+
+
+class SpanishTweetsFastText(EnglishTweets):
+    src = os.path.join(MODELS_FOLDER, 'fasttext_raw_200k_es.model')
