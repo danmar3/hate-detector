@@ -46,7 +46,8 @@ class FakeNews(object):
         if not hasattr(self, '_documents'):
             dataset = datalib.external.load_fakenews()
             dataset = dataset[dataset.language == self.language]
-            self._documents = gensim_preprocess(dataset.text)
+            # self._documents = gensim_preprocess(dataset.text)
+            self._documents = self.preprocess(dataset.text)
         return self._documents
 
     def init(self, size=200, window=10, min_count=2, workers=10,
@@ -76,13 +77,13 @@ class FakeNews(object):
             self._tokenizer = datalib.Tokenizer(self.language)
         dataset = series.apply(datalib.remove_urls_map)
         dataset = dataset.apply(datalib.remove_numbers)
-        dataset = dataset.apply(datalib.replace_punctuation)  #
+        #dataset = dataset.apply(datalib.replace_punctuation)  #
         dataset = dataset.apply(self._tokenizer)
         dataset = dataset.apply(datalib.user_camelcase_map)
         dataset = dataset.apply(datalib.hashtag_camelcase_map)
         dataset = dataset.apply(datalib.to_lowercase)
         # dataset = dataset.apply(datalib.remove_words_with_numbers)
-        dataset = dataset.apply(datalib.remove_punctuation)
+        #dataset = dataset.apply(datalib.remove_punctuation)
         return dataset
 
     def fit(self, sentences, epochs=5, concatenate=False):
@@ -170,6 +171,7 @@ class EnglishTweets(FakeNews):
 
     def load(self):
         self.model = gensim.models.KeyedVectors.load(self.src)
+        # self.model = Word2Vec.load(self.src)
 
     def fit(self, *args, **kargs):
         pass
@@ -195,3 +197,7 @@ class SpanishTweets(EnglishTweets):
 
     def __init__(self):
         self.language = 'spanish'
+
+
+class SpanishTweetsFastText(EnglishTweets):
+    src = os.path.join(MODELS_FOLDER, 'fasttext_raw_200k_es.model')
