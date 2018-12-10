@@ -32,15 +32,23 @@ chmod +x stage1_tests.sh
 
 Results are printed into a file called `results.txt`
 
+## Methodology
+TODO: Reference Viral's work and describe method with references to figures
+
 ## Developers
 * Paul Hudgins (hudginspj@.vcu.edu)
   * Stage 1: Experiments with Doc2Vec
-  * Stage 2: Procurement of a larger corpus of tweets, and comparative evaluation of embedding systems such as Word2Vec, GloVe, and FastText.
+  * Stage 2: Procurement of a larger corpus of tweets, comparative evaluation of Word2Vec and FastText, and develpment of corpus bootstrapping method
 * Viral Sheth (shethvh@.vcu.edu)
   * Stage  1:  Initial test run using presence of uni-grams as features and NLTK Naive Bayes and SciKitLearn’s Stochastic Gradient Descent, NuSVC as classifiers.
   * Stage2: POS tagging, tf-idf features
 * Daniel L. Marino (marinodl@vcu.edu)
   * Stage 1: pre-processing, project integration and project architecture, deployment and final results (Bayes, SVM, logistic regression, random forest, classification trees, gradient boosting, linear SGD)
   * Stage 2: LSTM language models
+
+
+
+
+
 
 **Github** repository: https://github.com/danmar3/hate-detector
