@@ -24,3 +24,6 @@ Our core code for stage 2 is included in ```hate-detector/nlp516```. This portio
 * main.py - Runs all tests and produces output file results.txt
 * model.py - Creates a class for combining vectorizors and classifiers
 * vectorizer.py - Defines vectorizors including doc2vec, unigram, and unigram presence
+
+* dev_playground/v1 hatEval.py - Initial experiments with Naieve Bayes
+* dev-playground/charNgram_hateval.py - 
