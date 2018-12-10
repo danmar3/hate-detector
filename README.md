@@ -30,7 +30,8 @@ chmod +x run_tests.sh
 ./run_tests.sh
 ```
 
-Results are printed into a file called `results.txt`
+Results are printed into a set of files called `results_{language}_{task}.txt`,
+  where language is either 'english' or 'spanish'.
 
 ## Developers
 * Paul Hudgins (hudginspj@.vcu.edu)
