@@ -272,16 +272,27 @@ def run_all_tests():
                       "w") as result_file:
                 print_results('-'*30 + '{} {}'.format(language, task) + '-'*30,
                               file=result_file)
-                results1 = run_stage1_tests(language=language,
-                                            task=task)
-                results2 = run_lstm_word2vec_tests(language=language,
-                                                   task=task)
+                if FLAGS.stage1 or FLAGS.all_tests:
+                    results1 = run_stage1_tests(language=language,
+                                                task=task)
+                else:
+                    results1 = None
+                if FLAGS.lstm or FLAGS.all_tests:
+                    results2 = run_lstm_word2vec_tests(language=language,
+                                                       task=task)
+                else:
+                    results2 = None
                 if FLAGS.all_tests:
                     results3 = run_lstm_character_tests(language=language,
                                                         task=task)
-                    results = pd.concat([results1, results2, results3])
                 else:
-                    results = pd.concat([results1, results2])
+                    results3 = None
+                results = [r for r in [results1, results2, results3]
+                           if r is not None]
+                if len(results) == 1:
+                    results = results[0]
+                else:
+                    results = pd.concat(results)
                 print_results(results, file=result_file)
 
 
@@ -291,6 +302,7 @@ def main():
     parser.add_argument('--to_latex', action='store_true')
     parser.add_argument('--stage1', action='store_true')
     parser.add_argument('--all_tests', action='store_true')
+    parser.add_argument('--lstm', action='store_true')
     FLAGS, unparsed = parser.parse_known_args()
     if FLAGS.to_latex:
         print('printing to latex')
