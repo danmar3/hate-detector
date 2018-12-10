@@ -14,7 +14,7 @@ See hate-detector/documentation/Project_Orgaization.md for more information.
 
 ```
 sudo apt-get install python3 python3-pip
-python3 -m pip install --upgrade setuptools wheel virtualenv 
+python3 -m pip install --upgrade setuptools wheel virtualenv
 ```
 
 2. Run installation script:
@@ -26,8 +26,8 @@ chmod +x install.sh
 ## Running tests
 Run the test script
 ```
-chmod +x stage1_tests.sh
-./stage1_tests.sh
+chmod +x run_tests.sh
+./run_tests.sh
 ```
 
 Results are printed into a file called `results.txt`

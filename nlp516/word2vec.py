@@ -22,7 +22,7 @@ else:
     TMP_FOLDER = os.path.join(_PROJECT_FOLDER, 'tmp/word2vec/vectorizer')
     if not os.path.exists(TMP_FOLDER):
         os.makedirs(TMP_FOLDER)
-    MODELS_FOLDER = '/dataset/models/'
+    MODELS_FOLDER = os.path.join(_PROJECT_FOLDER, 'dataset/models/')
 
 
 def gensim_preprocess(dataset):

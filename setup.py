@@ -42,7 +42,8 @@ def main():
           extras_require={
               'develop': ['nose', 'nose-timer', 'jupyter'],
           },
-          entry_points={'console_scripts': ['run_stage1=nlp516.main:main']},
+          entry_points={'console_scripts':
+                        ['run_experiments=nlp516.main:main']},
           author='team 5',
           licence='GPL',
           url='https://github.com/danmar3/hate-detector'

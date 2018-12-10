@@ -1,3 +1,3 @@
 source release_env/bin/activate
-run_stage1
+run_experiments --stage1
 deactivate
