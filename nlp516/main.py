@@ -167,6 +167,7 @@ VECTORIZERS = {
 
 
 def run_stage1_tests(language, task):
+    ''' run kfold tests for stage 1 models '''
     dataset = get_dataset(language)
     results = list()
     for k, data in enumerate(nlp516.data.KFold(dataset, K_FOLDS)):
@@ -179,6 +180,7 @@ def run_stage1_tests(language, task):
 
 
 def run_lstm_character_tests(language, task):
+    ''' run kfold tests for lstm+character models '''
     if language == 'spanish':
         dataset = nlp516.data.DevelopmentSpanishB()
         n_train_steps = 2
@@ -241,7 +243,24 @@ def run_lstm_word2vec_tests(language, task):
     return results
 
 
-def main():
+def run_stage1():
+    ''' run stage one tests '''
+    languages = ['english', 'spanish']
+    tasks = ['HS', 'TR', 'AG']
+    # ---------------- all tests -----------------
+    for language in languages:
+        dataset = get_dataset(language)
+        for task in tasks:
+            with open("results_{}_{}.txt".format(language, task),
+                      "w") as result_file:
+                print_results('-'*30 + '{} {}'.format(language, task) + '-'*30,
+                              file=result_file)
+                results = run_stage1_tests(language=language,
+                                           task=task)
+                print_results(results, file=result_file)
+
+
+def run_all_tests():
     ''' run all tests '''
     languages = ['english', 'spanish']
     tasks = ['HS', 'TR', 'AG']
@@ -257,7 +276,7 @@ def main():
                                             task=task)
                 results2 = run_lstm_word2vec_tests(language=language,
                                                    task=task)
-                if FLAGS.full:
+                if FLAGS.all_tests:
                     results3 = run_lstm_character_tests(language=language,
                                                         task=task)
                     results = pd.concat([results1, results2, results3])
@@ -266,11 +285,22 @@ def main():
                 print_results(results, file=result_file)
 
 
-if __name__ == '__main__':
+def main():
+    global FLAGS
     parser = argparse.ArgumentParser()
     parser.add_argument('--to_latex', action='store_true')
-    parser.add_argument('--full', action='store_true')
+    parser.add_argument('--stage1', action='store_true')
+    parser.add_argument('--all_tests', action='store_true')
     FLAGS, unparsed = parser.parse_known_args()
     if FLAGS.to_latex:
         print('printing to latex')
+    if FLAGS.stage1:
+        print('running stage 1 tests')
+        run_stage1()
+    else:
+        print('running all tests')
+        run_all_tests()
+
+
+if __name__ == '__main__':
     main()
