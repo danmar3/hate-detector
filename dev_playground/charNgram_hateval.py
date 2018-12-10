@@ -25,7 +25,7 @@ def preProcessTweets(tweets, hs_data):
 
 
 def extractCharNGrams(tweets, hs_data, gram):
-    all_words = []
+    global all_words
     for tweet in tweets:
         length = len(tweet)
         tweet_words = [tweet[i:i+gram] for i in range(length - gram + 1)]
@@ -49,7 +49,7 @@ def buildFeatureVector():
  
  
 #Read training dataset
-training_data = pd.read_csv(r'C:\Users\vsheth\Documents\CMSC 516 Advanced NLP\SemEval\Test data\public_development_en_Task A\public_development_en_train_en.tsv', delimiter='\t')
+training_data = pd.read_csv(r'C:\Users\viral\Documents\CMSC 516 Advanced NLP\SemEval\Test data\public_development_en_Task A\public_development_en_train_en.tsv', delimiter='\t')
 train_tweets = training_data['text']
 hs_train_data = training_data[["text", "HS"]]
 hs_train_data.set_index("text", inplace=True)
@@ -58,8 +58,8 @@ clean_tweets = [] #List of all tweets broken into words minus stopwords
 all_words = [] #List of all words in the tweets minus stopwords
 
 #preProcessTweets(train_tweets, hs_train_data)
-extractCharNGrams(train_tweets, hs_train_data, 3)
-    
+extractCharNGrams(train_tweets, hs_train_data, 4)
+
 #Take the 1000 most frequent words and make them as features
 all_words = nltk.FreqDist(all_words)
 #featureNames = list(all_words.keys())[:750]
@@ -73,7 +73,7 @@ classifier = nltk.NaiveBayesClassifier.train(trainingVector)
 #Now build the test dataset
 
 #Read test dataset
-test_data = pd.read_csv(r'C:\Users\vsheth\Documents\CMSC 516 Advanced NLP\SemEval\Test data\public_development_en_Task A\public_development_en_dev_en.tsv', delimiter='\t')
+test_data = pd.read_csv(r'C:\Users\viral\Documents\CMSC 516 Advanced NLP\SemEval\Test data\public_development_en_Task A\public_development_en_dev_en.tsv', delimiter='\t')
 test_tweets = test_data['text']
 hs_test_data = test_data[["text", "HS"]]
 hs_test_data.set_index("text", inplace=True)
@@ -82,7 +82,7 @@ clean_tweets = [] #List of all tweets broken into words minus stopwords
 all_words = [] #List of all words in the tweets minus stopwords
 
 #preProcessTweets(test_tweets, hs_test_data)
-extractCharNGrams(train_tweets, hs_train_data, 3)
+extractCharNGrams(test_tweets, hs_test_data, 4)
 
 testVector = buildFeatureVector()
 
