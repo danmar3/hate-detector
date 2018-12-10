@@ -18,7 +18,7 @@ from setuptools.command.install import install
 DEPS = ['nltk==3.3', 'pandas==0.23.4', 'pathlib', 'tqdm',
         'scikit-learn==0.20.0', 'scipy==1.1.0',
         'matplotlib==3.0.0', 'gensim==3.6.0',
-        'tensorflow==1.12.0', 'xarray'
+        'tensorflow==1.12.0', 'xarray',
         'emoji==0.5.1']
 
 
@@ -36,7 +36,13 @@ def main():
               exclude=["*test*", "tests"]),
           package_data={
               'nlp516': ['dataset/*.zip',
-                         'dataset/development/*.tsv']
+                         'dataset/development/*.tsv',
+                         'dataset/development_a/public_development_en/*.tsv',
+                         'dataset/development_a/public_development_es/*.tsv',
+                         'dataset/development_b/public_development_en/*.tsv',
+                         'dataset/development_b/public_development_es/*.tsv',
+                         'dataset/external/fake-news/*.csv',
+                         'dataset/models/*']
           },
           install_requires=get_dependencies(),
           extras_require={
