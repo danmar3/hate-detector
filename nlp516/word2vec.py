@@ -162,7 +162,7 @@ class EnglishTweets(FakeNews):
 
     def get_word_embedding(self, word):
         try:
-            return self.model.word_vec(word)
+            return self.model.wv.word_vec(word)
         except KeyError:
             return None
 
