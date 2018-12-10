@@ -1,13 +1,7 @@
 # hate-detector
-The hate-detector project contains work in progress towards Semeval 2019 task #5.
+The hate-detector project contains a classification pipeline for Semeval 2019 task #5.
 
-The first stage of our project includes:
-
-* Data preprocessing including stemming and removal of stop words
-* Experiments comparing vectorizations
-* Experiments comparing classifiers
-
-See hate-detector/documentation/Project_Orgaization.md for more information.
+See ```hate-detector/documentation/Project_Orgaization.md``` for details of project organization.
 
 ## Installation (Debian, Ubuntu)
 1. Install pre-requisites: Python3, pip, virtualenv:
@@ -34,7 +28,49 @@ Results are printed into a set of files called `results_{language}_{task}.txt`,
   where language is either 'english' or 'spanish'.
 
 ## Methodology
-TODO: Reference Viral's work and describe method with references to figures
+
+This project is designed to perform cross-validation on several combinations of classifiers and vectorizations at a single command.
+
+![alt text](https://github.com/danmar3/hate-detector/blob/master/documentation/figures/methodology.jpg?raw=true "Methodology")
+
+
+
+
+### Vectorizations
+* Bag-of-Words Vectorizations (BoWV): we
+considered the following variations: 1) Presence of unigrams 2) Frequency of unigrams
+3) TF-IDF weighted unigrams 3) Presence of
+bigrams
+* Part-of-Speech (POS) features: we included
+POS information following two approaches:
+1) Inclusion of POS tag frequencies in addition to BoWV features 2) Combining POS
+tags with unigrams before computing vectorizations
+* Doc2Vec: Doc2Vec produces document embeddings using a two-layer neural network. It
+is an extension of the Word2Vec model developed at Google, and is included in the Python
+package Gensim.
+* FastText: FastTex is a library for producing
+word embeddings, which was developed at
+Facebook. It builds as a Python package using Pip, but also requires a C compiler.
+* GloVe: Short for Global Vectors, GloVe
+develops vector representations of words
+based on statistical co-occurrence (Pennington et al., 2014). It was developed at Stanford
+and is available as a Python package.
+* Character one-hot encoding: this approach
+represents the tweet as a sequence of onehot encoded vectors. Each vector represents
+a character in the tweet.
+
+### Classifiers
+
+![alt text](https://github.com/danmar3/hate-detector/blob/master/documentation/figures/LSTM_Diagram.png?raw=true "LSTM Structure")
+
+### Corpus Bootstrapping and Building Models
+See ```hate-detector/documentation/Building_Models.md``` for instructions to download and filter corpuses and build word embedding models.
+
+### Expected Outputs
+
+
+
+
 
 ## Developers
 * Paul Hudgins (hudginspj@.vcu.edu)
