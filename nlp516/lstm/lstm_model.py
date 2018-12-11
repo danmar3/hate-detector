@@ -68,6 +68,8 @@ class StackedCell(object):
 
 
 class LstmModel(object):
+    ''' Hate-Detector lstm model that consist on a multilayer lstm network, a
+    reduce mean function and a logistic regression '''
     def _define_cell(self, num_units, keep_prob):
         cells = list()
         for i in range(len(num_units)):
@@ -182,6 +184,8 @@ class LstmModel(object):
 
 
 class BiLstmModel(LstmModel):
+    ''' Hate-Detector lstm model that consist on a multilayer bidirectional
+        lstm network, a reduce mean function and a logistic regression '''
     def _define_cell(self, num_units, keep_prob):
         # assert len(num_units) == 1, 'not implemented'
         cells = [BidirectionalCell(num_units=units, keep_prob=keep_prob[i])
@@ -214,6 +218,10 @@ class BiLstmModel(LstmModel):
 
 
 class AggregatedLstm(LstmModel):
+    ''' Hate-Detector lstm model that consist on a multilayer lstm network,
+        a logistic regression for each cell output and a mean voting mechanism
+        between unrolled cell outputs.
+    '''
     def _define_classifier(self, num_outputs, keep_prob=None):
         time_axis = (0 if self.time_major else 1)
         inputs = self.rnn.outputs
@@ -267,10 +275,16 @@ class AggregatedLstm(LstmModel):
 
 
 class AggregatedBiLstm(AggregatedLstm, BiLstmModel):
+    ''' Hate-Detector lstm model that consist on a multilayer bidirectional
+        lstm network, a logistic regression for each cell output and a mean
+        voting mechanism between unrolled cell outputs.
+    '''
     pass
 
 
 class LstmEstimator(object):
+    ''' lstm estimator for hate-detection.
+    '''
     MlModel = LstmModel
 
     def model_fn(self, features, labels, mode, params):
