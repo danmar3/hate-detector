@@ -14,6 +14,7 @@ import gensim.models.doc2vec
 
 
 class Unigram(object):
+    ''' bag-of-words representation '''
     def __init__(self, n_features):
         self.n_features = n_features
 
@@ -107,7 +108,8 @@ class Doc2Vec(object):
 
 
 class CharacterVectorizer(object):
-    START = uuid.uuid4()
+    ''' encode a sequence using a sparse one-hot character representation'''
+    START = uuid.uuid4()    # unique identifiers
     END = uuid.uuid4()
     EMOJI = uuid.uuid4()
     NUMBER = uuid.uuid4()
@@ -213,6 +215,8 @@ class OneHotSequenceEncoder(object):
 
 
 class StackedVectorizer(object):
+    ''' vectorizer that consist of several layers of vectorizers. 
+    The vectorizers are applied in sequence'''
     def __init__(self, vectorizers):
         self.vectorizers = vectorizers
 

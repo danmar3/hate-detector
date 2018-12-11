@@ -1,5 +1,5 @@
 """
-Word2Vec for fake news
+Word2Vec vectorizers
 @author: Daniel L. Marino (marinodl@vcu.edu)
 """
 
@@ -34,6 +34,9 @@ def gensim_preprocess(dataset):
 
 
 class FakeNews(object):
+    ''' Word vector embedding trained using the fake-news dataset from
+    https://kaggle.com/mrisdal/fake-news
+    '''
     def __init__(self, model_dir=None, language='english'):
         assert language == 'english', 'spanish not supported at the moment'
         if model_dir is None:
@@ -155,6 +158,7 @@ class FakeNews(object):
 
 
 class EnglishTweets(FakeNews):
+    ''' word vector embedding trained using external english tweets '''
     src = os.path.join(MODELS_FOLDER, 'wor2vec_raw_200k.model')
 
     def __init__(self):
@@ -173,14 +177,16 @@ class EnglishTweets(FakeNews):
         self.model = gensim.models.KeyedVectors.load(self.src)
         # self.model = Word2Vec.load(self.src)
 
-    def fit(self, *args, **kargs):
-        pass
+
+    # def fit(self, *args, **kargs):
+    #     pass
 
     def save(self):
         raise NotImplementedError('save not implemented for {}'.format(self))
 
 
 class EnglishTweetsFiltered(EnglishTweets):
+    ''' word vector embedding trained using bootstrapping english dataset '''
     src = os.path.join(MODELS_FOLDER, 'wor2vec_filtered_200k.model')
 
 
@@ -193,6 +199,7 @@ class EnglishTweetsFilteredFastText(EnglishTweets):
 
 
 class SpanishTweets(EnglishTweets):
+    ''' word vector embedding trained using external spanish tweets '''
     src = os.path.join(MODELS_FOLDER, 'wor2vec_raw_200k_es.model')
 
     def __init__(self):
@@ -200,4 +207,5 @@ class SpanishTweets(EnglishTweets):
 
 
 class SpanishTweetsFastText(EnglishTweets):
+    ''' word vector embedding trained using external spanish tweets '''
     src = os.path.join(MODELS_FOLDER, 'fasttext_raw_200k_es.model')

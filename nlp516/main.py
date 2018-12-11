@@ -310,7 +310,7 @@ def main():
         print('running stage 1 tests')
         run_stage1()
     else:
-        print('running all tests')
+        print('FLAGS: {}'.format(FLAGS))
         run_all_tests()
 
 

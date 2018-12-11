@@ -33,6 +33,16 @@ else:
 
 def run_experiment(raw, name='test', target=['HS'], n_train_steps=10,
                    vectorizer=None):
+    ''' train and evaluate the vector embeddings lstm model.
+    Args:
+        raw: dataset with training and validation dataframes
+        name: name for the test (used to store the weights)
+        n_train_steps: number of training steps.
+        vectorizer: word vectorizer. By default we use word2vec.FakeNews
+    Returns:
+        (estimator, metrics): the estimator and the score of the model on the
+        validation dataset.
+    '''
     # vectorize
     if vectorizer is None:
         vectorizer = nlp516.word2vec.FakeNews()
@@ -79,7 +89,7 @@ def run_experiment(raw, name='test', target=['HS'], n_train_steps=10,
 class LstmHateDetector(object):
     def __init__(self, name):
         # self.vectorizer = nlp516.word2vec.FakeNews()
-        self.vectorizer = nlp516.word2vec.EnglishTweets()
+        self.vectorizer = nlp516.word2vec.EnglishTweetsFiltered()
         self.vectorizer.load()
         self.model_dir = os.path.join(TMP_FOLDER, name)
 
