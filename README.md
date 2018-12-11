@@ -2,14 +2,17 @@
 # hate-detector
 The hate-detector project contains a classification pipeline for Semeval 2019 task #5.
 
+This classification task identifies Twitter hate speech against immigrants and women,
+and further identifies if the hate speech is aggressive or targeted.
+
 See ```hate-detector/documentation/Project_Orgaization.md``` for details of project organization.
 
-## Run with one command (not recommended)
+## Run all tests with one command (not recommended)
 
 The runit.sh script will perform a user install of dependencies, and assumes that python3 is installed.
 
 ```
-chmod +x runit.sh
+chmod +x runit.sh;
 ./install.sh
 ```
 
@@ -17,19 +20,25 @@ chmod +x runit.sh
 
 1. Install pre-requisites: Python3, pip, virtualenv
 ```
-sudo apt-get install python3 python3-pip
-python3 -m pip install --upgrade setuptools wheel virtualenv
+sudo apt-get install python3 python3-pip;
+python3 -m pip install --upgrade setuptools wheel; virtualenv
 ```
 
 2. Run installation script:
 ```
-chmod +x install.sh
+chmod +x install.sh;
 ./install.sh
 ```
 
-3. Run the test script
+3. Run selected tests:
 ```
-chmod +x run_tests.sh
+chmod +x run_english_hs.sh;
+./run_english_hs.sh
+```
+
+Alternately, run all tests (may take several hours):
+```
+chmod +x run_tests.sh;
 ./run_tests.sh
 ```
 
@@ -79,12 +88,17 @@ We experimented with the following classifiers:
 
 ### Expected Outputs
 The following is an example of one of the output files
-(named "results_english_HS.txt").
+(named ```results_english_HS.txt```).
   The file contains the 4-fold validation results.
+
+
+
 ```
 ------------------------------english HS------------------------------
-                            accuracy        f1  precision    recall
-MajorityBaseline -            0.5790  0.000000   0.000000  0.000000
+
+accuracy        f1  precision    recall
+
+MajorityBaseline -            0.5790  0.00000 0.000000  0.000000
 bayes            frequency    0.7085  0.607984   0.700072  0.537352
                  presence     0.7131  0.627779   0.691339  0.574954
 forest           frequency    0.7413  0.677892   0.712427  0.646830
