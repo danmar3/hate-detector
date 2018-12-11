@@ -27,5 +27,7 @@ Our core code for stage 2 is included in ```hate-detector/nlp516```. This portio
 * model.py - Creates a class for combining vectorizors and classifiers
 * vectorizer.py - Defines vectorizors including doc2vec, unigram, and unigram presence
 
-* dev_playground/v1 hatEval.py - Initial experiments with Naieve Bayes
-* dev-playground/charNgram_hateval.py -
+* dev_playground/v1 hatEval.py - Initial experiments with Naieve Bayes and unigram presence based features.
+* dev-playground/charNgram_hateval.py - Experiments with character N-gram features. Bigram, trigram and quadgram characters as features.
+* dev-playground/voter.py - A voter based method where multiple different classifiers such as - Logistic Regression, C-SVM and Nu-SVM are run sequentially. This method picks the class label based on majority voting.
+* dev-playground/pos.py - Experiments with Part-Of-Speech Tags features. Simplified POS tags (NN, VB, etc) are features and their frequency in tweets are feature values. 
