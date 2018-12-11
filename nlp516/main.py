@@ -262,9 +262,20 @@ def run_stage1():
 
 def run_all_tests():
     ''' run all tests '''
-    languages = ['english', 'spanish']
-    tasks = ['HS', 'TR', 'AG']
+    languages = []
+    if FLAGS.english or FLAGS.all_tests:
+        languages.append('english')
+    if FLAGS.spanish or FLAGS.all_tests:
+        languages.append('spanish')
+    tasks = []
+    if FLAGS.HS or FLAGS.all_tests:
+        tasks.append('HS')
+    if FLAGS.TR or FLAGS.all_tests:
+        tasks.append('TR')
+    if FLAGS.AG or FLAGS.all_tests:
+        tasks.append('AG')
     # ---------------- all tests -----------------
+    print('running {} x {}'.format(languages, tasks))
     for language in languages:
         dataset = get_dataset(language)
         for task in tasks:
@@ -303,6 +314,11 @@ def main():
     parser.add_argument('--stage1', action='store_true')
     parser.add_argument('--all_tests', action='store_true')
     parser.add_argument('--lstm', action='store_true')
+    parser.add_argument('--english', action='store_true')
+    parser.add_argument('--spanish', action='store_true')
+    parser.add_argument('--HS', action='store_true')
+    parser.add_argument('--TR', action='store_true')
+    parser.add_argument('--AG', action='store_true')
     FLAGS, unparsed = parser.parse_known_args()
     if FLAGS.to_latex:
         print('printing to latex')
