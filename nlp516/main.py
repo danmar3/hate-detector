@@ -322,12 +322,8 @@ def main():
     FLAGS, unparsed = parser.parse_known_args()
     if FLAGS.to_latex:
         print('printing to latex')
-    if FLAGS.stage1:
-        print('running stage 1 tests')
-        run_stage1()
-    else:
-        print('FLAGS: {}'.format(FLAGS))
-        run_all_tests()
+    print('FLAGS: {}'.format(FLAGS))
+    run_all_tests()
 
 
 if __name__ == '__main__':
